@@ -1,67 +1,155 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <title>my_board_game Chat</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PIKUO</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h2>my_board_game チャットテスト</h2>
+    <!-- モード選択画面 -->
+    <div id="modeSelect" class="screen">
+        <div class="logo-container">
+            <h1 class="logo">PIKUO</h1>
+        </div>
+        <div class="mode-buttons">
+            <button class="mode-btn" id="onlineMode">ONLINE</button>
+            <button class="mode-btn" id="localMode">LOCAL</button>
+        </div>
+    </div>
 
-  <div id="messages"
-       style="border:1px solid #ccc; height:200px; overflow:auto;">
-  </div>
+    <!-- オンライン待機画面 -->
+    <div id="waitingRoom" class="screen hidden">
+        <div class="room-header">
+            <h2 class="logo-small">PIKUO</h2>
+            <button class="back-btn" id="backToMode">← BACK</button>
+        </div>
+        
+        <div class="player-seats">
+            <div class="seat" id="seat1">
+                <div class="seat-label">PLAYER 1</div>
+                <button class="seat-btn" id="sitBtn1">SIT</button>
+                <div class="seated-indicator hidden">SEATED</div>
+            </div>
+            <div class="seat" id="seat2">
+                <div class="seat-label">PLAYER 2</div>
+                <button class="seat-btn" id="sitBtn2">SIT</button>
+                <div class="seated-indicator hidden">SEATED</div>
+            </div>
+        </div>
 
-  <input id="msg" type="text" placeholder="メッセージ入力"/>
-  <button onclick="sendMsg()">送信</button>
+        <div class="cost-control">
+            <label for="costSlider">COST LIMIT: <span id="costValue">30</span></label>
+            <input type="range" id="costSlider" min="20" max="50" value="30">
+        </div>
 
-  <script>
-    // ★ httpsならwss、httpならws
-    const protocol =
-      location.protocol === "https:" ? "wss:" : "ws:";
+        <div class="spectator-area">
+            <div class="spectator-label">SPECTATING</div>
+            <div id="spectatorBoard" class="board-preview"></div>
+        </div>
+    </div>
 
-    const ws = new WebSocket(
-      protocol + "//" + location.host
-    );
+    <!-- セットアップ画面 -->
+    <div id="setupScreen" class="screen hidden">
+        <div class="setup-header">
+            <h2 class="logo-small">PIKUO</h2>
+            <div class="status-text">CONFIGURE YOUR PIECES</div>
+            <div class="cost-display">REMAINING: <span id="remainingCost">30</span></div>
+        </div>
 
-    ws.onopen = () => {
-      console.log("WebSocket 接続成功");
-    };
+        <div class="setup-container">
+            <div class="board-container">
+                <canvas id="setupCanvas" width="800" height="800"></canvas>
+            </div>
 
-    ws.onerror = (err) => {
-      console.error("WebSocket error:", err);
-    };
+            <div class="piece-palette">
+                <div class="palette-title">PIECES</div>
+                <div class="piece-list" id="pieceList"></div>
+                <button class="ready-btn" id="readyBtn">READY</button>
+                <button class="leave-btn" id="leaveSetup">LEAVE</button>
+            </div>
+        </div>
+    </div>
 
-    ws.onmessage = (event) => {
-      const div = document.getElementById("messages");
+    <!-- ゲーム画面 -->
+    <div id="gameScreen" class="screen hidden">
+        <div class="game-header">
+            <h2 class="logo-small">PIKUO</h2>
+            <div class="turn-indicator">TURN: PLAYER <span id="currentPlayer">1</span></div>
+        </div>
 
-      div.innerHTML +=
-        "<div>" + event.data + "</div>";
+        <div class="game-container">
+            <div class="captured-area opponent-captured">
+                <div class="captured-label">OPPONENT'S CAPTURED</div>
+                <div class="captured-pieces" id="opponentCaptured"></div>
+            </div>
 
-      div.scrollTop = div.scrollHeight;
-    };
+            <div class="board-container">
+                <canvas id="gameCanvas" width="800" height="800"></canvas>
+            </div>
 
-    function sendMsg() {
-      const input = document.getElementById("msg");
+            <div class="captured-area player-captured">
+                <div class="captured-label">YOUR CAPTURED</div>
+                <div class="captured-pieces" id="playerCaptured"></div>
+            </div>
+        </div>
 
-      if (
-        input.value &&
-        ws.readyState === WebSocket.OPEN
-      ) {
-        ws.send(input.value);
-        input.value = "";
-      }
-    }
+        <div class="game-controls">
+            <button class="control-btn" id="surrenderBtn">SURRENDER</button>
+            <button class="control-btn" id="leaveGame">LEAVE</button>
+        </div>
+    </div>
 
-    // Enterキーでも送信
-    document
-      .getElementById("msg")
-      .addEventListener("keypress", function(e) {
-        if (e.key === "Enter") {
-          sendMsg();
-        }
-      });
+    <!-- ローカル対局画面 -->
+    <div id="localScreen" class="screen hidden">
+        <div class="game-header">
+            <h2 class="logo-small">PIKUO</h2>
+            <div class="turn-indicator">LOCAL GAME</div>
+            <button class="back-btn" id="backFromLocal">← BACK</button>
+        </div>
 
-  </script>
+        <div class="local-setup" id="localSetup">
+            <div class="cost-control">
+                <label for="localCostSlider">COST LIMIT: <span id="localCostValue">30</span></label>
+                <input type="range" id="localCostSlider" min="20" max="50" value="30">
+            </div>
+            <button class="mode-btn" id="startLocal">START SETUP</button>
+        </div>
 
+        <div class="local-game hidden" id="localGame">
+            <div class="game-container">
+                <div class="captured-area">
+                    <div class="captured-label">PLAYER 2 CAPTURED</div>
+                    <div class="captured-pieces" id="local2Captured"></div>
+                </div>
+
+                <div class="board-container">
+                    <canvas id="localCanvas" width="800" height="800"></canvas>
+                </div>
+
+                <div class="captured-area">
+                    <div class="captured-label">PLAYER 1 CAPTURED</div>
+                    <div class="captured-pieces" id="local1Captured"></div>
+                </div>
+            </div>
+
+            <div class="game-controls">
+                <button class="control-btn" id="resetLocal">RESET</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 勝敗画面 -->
+    <div id="resultScreen" class="screen hidden">
+        <div class="result-container">
+            <h1 class="result-text" id="resultText">PLAYER 1 WINS</h1>
+            <button class="mode-btn" id="nextGame">NEXT GAME</button>
+        </div>
+    </div>
+
+    <script src="audio.js"></script>
+    <script src="game.js"></script>
+    <script src="online.js"></script>
+    <script src="local.js"></script>
 </body>
 </html>
