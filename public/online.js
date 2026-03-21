@@ -201,9 +201,9 @@ class OnlineGame {
         // 駒パレットの作成
         this.createPiecePalette();
         
-        // キャンバスの設定
+        // キャンバスの設定（playerNumを渡す）
         const canvas = document.getElementById('setupCanvas');
-        this.boardRenderer = new BoardRenderer(canvas);
+        this.boardRenderer = new BoardRenderer(canvas, 80, this.myPlayerNum);
         this.setupCanvasForPlacement(canvas);
         this.boardRenderer.drawBoard(null);
     }
@@ -296,6 +296,15 @@ class OnlineGame {
     }
 
     placePieceInSetup(row, col, type) {
+        // Kingは1個まで
+        if (type === 'king') {
+            const hasKing = this.setupPieces.some(p => p.type === 'king');
+            if (hasKing) {
+                alert('王は1個までです');
+                return;
+            }
+        }
+        
         // 既に駒がある場合は削除
         const existingIndex = this.setupPieces.findIndex(p => p.row === row && p.col === col);
         if (existingIndex !== -1) {
@@ -373,7 +382,7 @@ class OnlineGame {
         this.updateTurnDisplay();
         
         const canvas = document.getElementById('gameCanvas');
-        this.boardRenderer = new BoardRenderer(canvas);
+        this.boardRenderer = new BoardRenderer(canvas, 80, this.myPlayerNum);
         this.setupGameCanvas(canvas);
         this.boardRenderer.drawBoard(this.gameState.board);
     }
@@ -597,6 +606,10 @@ class OnlineGame {
         } else {
             audioSystem.playKingCaptured();
         }
+        
+        // 試合終了後に自動退席
+        this.send({ type: 'leave' });
+        this.myPlayerNum = null;
     }
 
     resetGame() {

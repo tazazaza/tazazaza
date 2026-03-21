@@ -290,17 +290,19 @@ class PieceRenderer {
     }
     
     static drawLance(ctx, size, baseColor, colors) {
-        // 槍の穂先風デザイン
+        // 槍の穂先風デザイン（左右対称）
         const height = size * 0.4;
         const width = size * 0.25;
         
         // 穂先
         ctx.beginPath();
         ctx.moveTo(0, -height);
-        ctx.lineTo(width * 0.8, -height * 0.5);
-        ctx.lineTo(width * 0.4, height);
-        ctx.lineTo(-width * 0.4, height);
-        ctx.lineTo(-width * 0.8, -height * 0.5);
+        ctx.lineTo(width, -height * 0.6);
+        ctx.lineTo(width * 0.5, -height * 0.3);
+        ctx.lineTo(width * 0.5, height);
+        ctx.lineTo(-width * 0.5, height);
+        ctx.lineTo(-width * 0.5, -height * 0.3);
+        ctx.lineTo(-width, -height * 0.6);
         ctx.closePath();
         ctx.fillStyle = baseColor;
         ctx.fill();
@@ -308,51 +310,63 @@ class PieceRenderer {
         ctx.lineWidth = 2;
         ctx.stroke();
         
-        // 内側の装飾
+        // 内側の装飾（左右対称）
         ctx.beginPath();
         ctx.moveTo(0, -height * 0.7);
         ctx.lineTo(0, height * 0.7);
         ctx.stroke();
+        
+        ctx.beginPath();
+        ctx.moveTo(-width * 0.3, -height * 0.5);
+        ctx.lineTo(-width * 0.3, height * 0.5);
+        ctx.moveTo(width * 0.3, -height * 0.5);
+        ctx.lineTo(width * 0.3, height * 0.5);
+        ctx.stroke();
     }
     
     static drawSideLance(ctx, size, baseColor, colors) {
-        // 横向きの槍
+        // 横向きの槍（左右対称）
         const height = size * 0.25;
         const width = size * 0.4;
         
         ctx.beginPath();
-        ctx.moveTo(width, 0);
-        ctx.lineTo(width * 0.5, height * 0.8);
-        ctx.lineTo(-width, height * 0.4);
-        ctx.lineTo(-width, -height * 0.4);
-        ctx.lineTo(width * 0.5, -height * 0.8);
+        ctx.moveTo(0, 0);
+        ctx.lineTo(width * 0.8, -height * 0.8);
+        ctx.lineTo(width * 0.8, height * 0.8);
         ctx.closePath();
+        
+        ctx.moveTo(0, 0);
+        ctx.lineTo(-width * 0.8, -height * 0.8);
+        ctx.lineTo(-width * 0.8, height * 0.8);
+        ctx.closePath();
+        
         ctx.fillStyle = baseColor;
         ctx.fill();
         ctx.strokeStyle = colors.border;
         ctx.lineWidth = 2;
         ctx.stroke();
         
+        // 中心線
         ctx.beginPath();
-        ctx.moveTo(width * 0.7, 0);
-        ctx.lineTo(-width * 0.7, 0);
+        ctx.moveTo(-width * 0.6, 0);
+        ctx.lineTo(width * 0.6, 0);
         ctx.stroke();
     }
     
     static drawVKnight(ctx, size, baseColor, colors) {
-        // 稲妻型の複雑なデザイン
+        // 縦L字（左右対称）
         const length = size * 0.35;
         
+        // L字の形（左右対称に）
         ctx.beginPath();
-        ctx.moveTo(-length * 0.3, -length);
-        ctx.lineTo(length * 0.3, -length);
-        ctx.lineTo(length * 0.3, -length * 0.2);
-        ctx.lineTo(length * 0.7, -length * 0.2);
-        ctx.lineTo(length * 0.7, length * 0.5);
-        ctx.lineTo(length * 0.1, length * 0.5);
-        ctx.lineTo(length * 0.1, length);
-        ctx.lineTo(-length * 0.3, length);
-        ctx.lineTo(-length * 0.3, -length);
+        ctx.moveTo(-length * 0.25, -length);
+        ctx.lineTo(length * 0.25, -length);
+        ctx.lineTo(length * 0.25, length * 0.3);
+        ctx.lineTo(length * 0.6, length * 0.3);
+        ctx.lineTo(length * 0.6, length * 0.7);
+        ctx.lineTo(-length * 0.6, length * 0.7);
+        ctx.lineTo(-length * 0.6, length * 0.3);
+        ctx.lineTo(-length * 0.25, length * 0.3);
         ctx.closePath();
         
         ctx.fillStyle = baseColor;
@@ -362,23 +376,22 @@ class PieceRenderer {
         ctx.stroke();
         
         // 内側の装飾
-        ctx.strokeRect(-length * 0.1, -length * 0.8, length * 0.2, length * 0.5);
+        ctx.strokeRect(-length * 0.15, -length * 0.8, length * 0.3, length * 0.6);
     }
     
     static drawHKnight(ctx, size, baseColor, colors) {
-        // 横向き稲妻
+        // 横L字（上下対称）
         const length = size * 0.35;
         
         ctx.beginPath();
-        ctx.moveTo(-length, -length * 0.3);
-        ctx.lineTo(-length, length * 0.3);
-        ctx.lineTo(-length * 0.2, length * 0.3);
-        ctx.lineTo(-length * 0.2, length * 0.7);
-        ctx.lineTo(length * 0.5, length * 0.7);
-        ctx.lineTo(length * 0.5, length * 0.1);
-        ctx.lineTo(length, length * 0.1);
-        ctx.lineTo(length, -length * 0.3);
-        ctx.lineTo(-length, -length * 0.3);
+        ctx.moveTo(-length, -length * 0.25);
+        ctx.lineTo(-length, length * 0.25);
+        ctx.lineTo(length * 0.3, length * 0.25);
+        ctx.lineTo(length * 0.3, length * 0.6);
+        ctx.lineTo(length * 0.7, length * 0.6);
+        ctx.lineTo(length * 0.7, -length * 0.6);
+        ctx.lineTo(length * 0.3, -length * 0.6);
+        ctx.lineTo(length * 0.3, -length * 0.25);
         ctx.closePath();
         
         ctx.fillStyle = baseColor;
@@ -387,19 +400,19 @@ class PieceRenderer {
         ctx.lineWidth = 2;
         ctx.stroke();
         
-        ctx.strokeRect(-length * 0.8, -length * 0.1, length * 0.5, length * 0.2);
+        ctx.strokeRect(-length * 0.8, -length * 0.15, length * 0.6, length * 0.3);
     }
     
     static drawJump2(ctx, size, baseColor, colors) {
-        // 二重の六角形
-        const height = size * 0.35;
+        // 複雑な八角形と内部パターン
+        const radius = size * 0.35;
         
-        // 外側の六角形
+        // 外側の八角形
         ctx.beginPath();
-        for (let i = 0; i < 6; i++) {
-            const angle = (Math.PI / 3) * i + Math.PI / 6;
-            const x = Math.cos(angle) * height;
-            const y = Math.sin(angle) * height * 0.7;
+        for (let i = 0; i < 8; i++) {
+            const angle = (Math.PI / 4) * i;
+            const x = Math.cos(angle) * radius;
+            const y = Math.sin(angle) * radius;
             if (i === 0) ctx.moveTo(x, y);
             else ctx.lineTo(x, y);
         }
@@ -410,38 +423,54 @@ class PieceRenderer {
         ctx.lineWidth = 2;
         ctx.stroke();
         
-        // 内側の六角形
+        // 内側の四角形
         ctx.beginPath();
-        for (let i = 0; i < 6; i++) {
-            const angle = (Math.PI / 3) * i + Math.PI / 6;
-            const x = Math.cos(angle) * height * 0.5;
-            const y = Math.sin(angle) * height * 0.35;
+        for (let i = 0; i < 4; i++) {
+            const angle = (Math.PI / 2) * i + Math.PI / 4;
+            const x = Math.cos(angle) * radius * 0.6;
+            const y = Math.sin(angle) * radius * 0.6;
             if (i === 0) ctx.moveTo(x, y);
             else ctx.lineTo(x, y);
         }
         ctx.closePath();
         ctx.stroke();
         
-        // 中心の線
+        // 十字の線
         ctx.beginPath();
-        ctx.moveTo(0, -height * 0.5);
-        ctx.lineTo(0, height * 0.5);
+        ctx.moveTo(0, -radius * 0.8);
+        ctx.lineTo(0, radius * 0.8);
+        ctx.moveTo(-radius * 0.8, 0);
+        ctx.lineTo(radius * 0.8, 0);
         ctx.stroke();
+        
+        // 4つの小円
+        for (let i = 0; i < 4; i++) {
+            const angle = (Math.PI / 2) * i;
+            const x = Math.cos(angle) * radius * 0.4;
+            const y = Math.sin(angle) * radius * 0.4;
+            ctx.beginPath();
+            ctx.arc(x, y, radius * 0.15, 0, Math.PI * 2);
+            ctx.stroke();
+        }
     }
 }
 
 // 盤面描画クラス
 class BoardRenderer {
-    constructor(canvas, cellSize = 80) {
+    constructor(canvas, cellSize = 80, playerNum = 1) {
         this.canvas = canvas;
         this.ctx = canvas.getContext('2d');
         this.cellSize = cellSize;
         this.highlightedCells = [];
         this.selectedPiece = null;
+        this.playerNum = playerNum; // プレイヤー番号を保存
     }
     
     drawBoard(board, perspective = 1) {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        
+        // Player 2の場合は盤面を180度回転
+        const isRotated = this.playerNum === 2;
         
         // 盤面のグリッド
         this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
@@ -464,7 +493,9 @@ class BoardRenderer {
         // ハイライト表示
         this.ctx.fillStyle = 'rgba(74, 158, 255, 0.2)';
         for (const cell of this.highlightedCells) {
-            this.ctx.fillRect(cell.col * this.cellSize, cell.row * this.cellSize, 
+            const displayRow = isRotated ? 9 - cell.row : cell.row;
+            const displayCol = isRotated ? 9 - cell.col : cell.col;
+            this.ctx.fillRect(displayCol * this.cellSize, displayRow * this.cellSize, 
                             this.cellSize, this.cellSize);
         }
         
@@ -474,11 +505,18 @@ class BoardRenderer {
                 for (let col = 0; col < 10; col++) {
                     const piece = board[row][col];
                     if (piece) {
-                        const x = col * this.cellSize + this.cellSize / 2;
-                        const y = row * this.cellSize + this.cellSize / 2;
+                        const displayRow = isRotated ? 9 - row : row;
+                        const displayCol = isRotated ? 9 - col : col;
+                        const x = displayCol * this.cellSize + this.cellSize / 2;
+                        const y = displayRow * this.cellSize + this.cellSize / 2;
                         
-                        // プレイヤー2の駒は180度回転
-                        const rotation = piece.owner === 2 ? Math.PI : 0;
+                        // 自分の駒は常に上向き、相手の駒は常に下向き
+                        let rotation = 0;
+                        if (this.playerNum === 1) {
+                            rotation = piece.owner === 2 ? Math.PI : 0;
+                        } else {
+                            rotation = piece.owner === 1 ? Math.PI : 0;
+                        }
                         
                         PieceRenderer.draw(this.ctx, piece, x, y, this.cellSize, piece.owner, rotation);
                     }
@@ -499,8 +537,13 @@ class BoardRenderer {
         const col = Math.floor(x / this.cellSize);
         const row = Math.floor(y / this.cellSize);
         
-        if (row >= 0 && row < 10 && col >= 0 && col < 10) {
-            return { row, col };
+        // Player 2の場合は座標を反転
+        const isRotated = this.playerNum === 2;
+        const actualRow = isRotated ? 9 - row : row;
+        const actualCol = isRotated ? 9 - col : col;
+        
+        if (actualRow >= 0 && actualRow < 10 && actualCol >= 0 && actualCol < 10) {
+            return { row: actualRow, col: actualCol };
         }
         return null;
     }
