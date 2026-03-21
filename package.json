@@ -1,0 +1,26 @@
+{
+  "name": "my_board_game",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "express": "^5.2.1",
+    "ws": "^8.19.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tazazaza/tazazaza.git"
+  },
+  "bugs": {
+    "url": "https://github.com/tazazaza/tazazaza/issues"
+  },
+  "homepage": "https://github.com/tazazaza/tazazaza#readme"
+}
