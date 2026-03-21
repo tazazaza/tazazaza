@@ -218,9 +218,6 @@ class OnlineGame {
         this.setupHistoryIndex = -1;
         document.getElementById('remainingCost').textContent = this.remainingCost;
         
-        // 駒パレットの作成
-        this.createPiecePalette();
-        
         // キャンバスの設定（playerNumを渡す）
         const canvas = document.getElementById('setupCanvas');
         this.boardRenderer = new BoardRenderer(canvas, 80, this.myPlayerNum);
@@ -230,6 +227,11 @@ class OnlineGame {
         const emptyBoard = Array(10).fill(null).map(() => Array(10).fill(null));
         this.boardRenderer.drawBoard(emptyBoard);
         
+        // 駒パレットの作成（少し遅延させる）
+        setTimeout(() => {
+            this.createPiecePalette();
+        }, 100);
+        
         // 初期状態を履歴に保存
         this.saveSetupHistory();
     }
@@ -237,6 +239,13 @@ class OnlineGame {
     createPiecePalette() {
         const container = document.getElementById('pieceList');
         container.innerHTML = '';
+        
+        // PieceDesignsがロードされていない場合は待つ
+        if (typeof PieceDesigns === 'undefined') {
+            console.log('Waiting for PieceDesigns to load...');
+            setTimeout(() => this.createPiecePalette(), 50);
+            return;
+        }
         
         for (const [type, info] of Object.entries(PIECES)) {
             const div = document.createElement('div');
@@ -253,23 +262,16 @@ class OnlineGame {
             try {
                 // 駒を描画（自分のプレイヤー番号で色を決定）
                 const dummyPiece = { type: type, level: 0, owner: this.myPlayerNum };
-                const rank = PieceRenderer.getPieceRank(dummyPiece);
-                const colors = RANK_COLORS[rank];
-                const baseColor = this.myPlayerNum === 1 ? '#ff4444' : '#4488ff';
                 
-                ctx.save();
-                ctx.translate(30, 30);
-                
-                const drawMethod = `draw${type.charAt(0).toUpperCase() + type.slice(1)}`;
-                if (type === 'soldier') {
-                    PieceDesigns.drawSoldier(ctx, 60, baseColor, colors, 0);
-                } else if (PieceDesigns[drawMethod]) {
-                    PieceDesigns[drawMethod](ctx, 60, baseColor, colors);
-                }
-                
-                ctx.restore();
+                // PieceRendererを使って描画（PieceDesignsを内部で呼ぶ）
+                PieceRenderer.draw(ctx, dummyPiece, 30, 30, 60, this.myPlayerNum, 0);
             } catch (e) {
                 console.error('駒描画エラー:', type, e);
+                // エラー時はテキストで表示
+                ctx.fillStyle = '#ffffff';
+                ctx.font = '10px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(info.name, 30, 35);
             }
             
             const costSpan = document.createElement('span');
@@ -290,6 +292,8 @@ class OnlineGame {
             
             container.appendChild(div);
         }
+        
+        console.log('Piece palette created successfully');
     }
 
     setupCanvasForPlacement(canvas) {
