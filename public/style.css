@@ -153,6 +153,22 @@ body::before {
     transform: translateY(0);
 }
 
+.control-btn.small {
+    padding: 10px 20px;
+    font-size: 14px;
+}
+
+.setup-controls {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+.setup-controls .control-btn {
+    flex: 1;
+}
+
 .mode-buttons {
     display: flex;
     gap: 40px;
@@ -192,6 +208,13 @@ body::before {
     gap: 20px;
     position: relative;
     overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.seat.occupied {
+    background: rgba(212, 175, 55, 0.1);
+    border-color: var(--accent-gold);
+    box-shadow: 0 0 20px var(--glow-gold);
 }
 
 .seat::before {
@@ -218,9 +241,17 @@ body::before {
 }
 
 .seated-indicator {
-    font-size: 16px;
+    font-size: 18px;
+    font-weight: 700;
     color: var(--accent-gold);
     text-shadow: 0 0 10px var(--glow-gold);
+    letter-spacing: 3px;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
 }
 
 .cost-control {
@@ -362,14 +393,15 @@ canvas {
 }
 
 .piece-item {
-    padding: 15px;
+    padding: 10px;
     background: rgba(255, 255, 255, 0.02);
     border: 1px solid rgba(255, 255, 255, 0.1);
     cursor: grab;
     transition: all 0.3s ease;
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
     align-items: center;
+    gap: 8px;
 }
 
 .piece-item:hover {
@@ -390,8 +422,9 @@ canvas {
 }
 
 .piece-cost {
-    font-size: 12px;
+    font-size: 11px;
     color: var(--accent-gold);
+    letter-spacing: 1px;
 }
 
 /* ゲーム画面 */

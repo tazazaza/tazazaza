@@ -21,6 +21,8 @@ class OnlineGame {
         this.highlightedMoves = [];
         this.isMyTurn = false;
         this.originalTitle = document.title;
+        this.setupHistory = [];
+        this.setupHistoryIndex = -1;
     }
 
     init() {
@@ -57,6 +59,18 @@ class OnlineGame {
 
         document.getElementById('leaveSetup').addEventListener('click', () => {
             this.leaveGame();
+        });
+
+        document.getElementById('undoBtn').addEventListener('click', () => {
+            this.undoSetup();
+        });
+
+        document.getElementById('redoBtn').addEventListener('click', () => {
+            this.redoSetup();
+        });
+
+        document.getElementById('resetBtn').addEventListener('click', () => {
+            this.resetSetup();
         });
 
         document.getElementById('surrenderBtn').addEventListener('click', () => {
@@ -174,17 +188,21 @@ class OnlineGame {
     handlePlayerSat(playerNum) {
         const seatBtn = document.getElementById(`sitBtn${playerNum}`);
         const indicator = document.querySelector(`#seat${playerNum} .seated-indicator`);
+        const seat = document.getElementById(`seat${playerNum}`);
         
         seatBtn.classList.add('hidden');
         indicator.classList.remove('hidden');
+        seat.classList.add('occupied');
     }
 
     handlePlayerLeft(playerNum) {
         const seatBtn = document.getElementById(`sitBtn${playerNum}`);
         const indicator = document.querySelector(`#seat${playerNum} .seated-indicator`);
+        const seat = document.getElementById(`seat${playerNum}`);
         
         seatBtn.classList.remove('hidden');
         indicator.classList.add('hidden');
+        seat.classList.remove('occupied');
     }
 
     updateGameState(state) {
@@ -196,6 +214,8 @@ class OnlineGame {
         
         this.remainingCost = this.gameState.costLimit;
         this.setupPieces = [];
+        this.setupHistory = [];
+        this.setupHistoryIndex = -1;
         document.getElementById('remainingCost').textContent = this.remainingCost;
         
         // 駒パレットの作成
@@ -206,6 +226,9 @@ class OnlineGame {
         this.boardRenderer = new BoardRenderer(canvas, 80, this.myPlayerNum);
         this.setupCanvasForPlacement(canvas);
         this.boardRenderer.drawBoard(null);
+        
+        // 初期状態を履歴に保存
+        this.saveSetupHistory();
     }
 
     createPiecePalette() {
@@ -218,15 +241,33 @@ class OnlineGame {
             div.draggable = true;
             div.dataset.type = type;
             
-            const nameSpan = document.createElement('span');
-            nameSpan.className = 'piece-name';
-            nameSpan.textContent = info.name;
+            // 小さいキャンバスで駒を描画
+            const canvas = document.createElement('canvas');
+            canvas.width = 60;
+            canvas.height = 60;
+            const ctx = canvas.getContext('2d');
+            
+            // 駒を描画（自分のプレイヤー番号で色を決定）
+            const dummyPiece = { type: type, level: 0, owner: this.myPlayerNum };
+            const rank = PieceRenderer.getPieceRank(dummyPiece);
+            const colors = RANK_COLORS[rank];
+            const baseColor = this.myPlayerNum === 1 ? '#ff4444' : '#4488ff';
+            
+            const drawMethod = `draw${type.charAt(0).toUpperCase() + type.slice(1)}`;
+            if (type === 'soldier') {
+                PieceDesigns.drawSoldier(ctx, 60, baseColor, colors, 0);
+            } else if (PieceDesigns[drawMethod]) {
+                ctx.save();
+                ctx.translate(30, 30);
+                PieceDesigns[drawMethod](ctx, 60, baseColor, colors);
+                ctx.restore();
+            }
             
             const costSpan = document.createElement('span');
             costSpan.className = 'piece-cost';
-            costSpan.textContent = `${info.cost}`;
+            costSpan.textContent = `COST: ${info.cost}`;
             
-            div.appendChild(nameSpan);
+            div.appendChild(canvas);
             div.appendChild(costSpan);
             
             div.addEventListener('dragstart', (e) => {
@@ -324,7 +365,16 @@ class OnlineGame {
         this.remainingCost -= PIECES[type].cost;
         document.getElementById('remainingCost').textContent = this.remainingCost;
         
+        // 履歴を保存
+        this.saveSetupHistory();
+        
         // 盤面を更新
+        this.updateSetupBoard();
+        
+        audioSystem.playPlace('C');
+    }
+    
+    updateSetupBoard() {
         const tempBoard = Array(10).fill(null).map(() => Array(10).fill(null));
         for (const piece of this.setupPieces) {
             tempBoard[piece.row][piece.col] = {
@@ -334,8 +384,51 @@ class OnlineGame {
             };
         }
         this.boardRenderer.drawBoard(tempBoard);
+    }
+    
+    saveSetupHistory() {
+        // 現在位置より後ろの履歴を削除
+        this.setupHistory = this.setupHistory.slice(0, this.setupHistoryIndex + 1);
         
-        audioSystem.playPlace('C');
+        // 現在の状態を保存
+        this.setupHistory.push({
+            pieces: JSON.parse(JSON.stringify(this.setupPieces)),
+            cost: this.remainingCost
+        });
+        
+        this.setupHistoryIndex = this.setupHistory.length - 1;
+    }
+    
+    undoSetup() {
+        if (this.setupHistoryIndex > 0) {
+            this.setupHistoryIndex--;
+            this.restoreSetupState();
+        }
+    }
+    
+    redoSetup() {
+        if (this.setupHistoryIndex < this.setupHistory.length - 1) {
+            this.setupHistoryIndex++;
+            this.restoreSetupState();
+        }
+    }
+    
+    resetSetup() {
+        this.setupPieces = [];
+        this.remainingCost = this.gameState.costLimit;
+        this.setupHistory = [];
+        this.setupHistoryIndex = -1;
+        document.getElementById('remainingCost').textContent = this.remainingCost;
+        this.updateSetupBoard();
+        this.saveSetupHistory();
+    }
+    
+    restoreSetupState() {
+        const state = this.setupHistory[this.setupHistoryIndex];
+        this.setupPieces = JSON.parse(JSON.stringify(state.pieces));
+        this.remainingCost = state.cost;
+        document.getElementById('remainingCost').textContent = this.remainingCost;
+        this.updateSetupBoard();
     }
 
     removePieceFromSetup(row, col) {
@@ -347,16 +440,11 @@ class OnlineGame {
             
             document.getElementById('remainingCost').textContent = this.remainingCost;
             
+            // 履歴を保存
+            this.saveSetupHistory();
+            
             // 盤面を更新
-            const tempBoard = Array(10).fill(null).map(() => Array(10).fill(null));
-            for (const piece of this.setupPieces) {
-                tempBoard[piece.row][piece.col] = {
-                    type: piece.type,
-                    level: 0,
-                    owner: this.myPlayerNum
-                };
-            }
-            this.boardRenderer.drawBoard(tempBoard);
+            this.updateSetupBoard();
         }
     }
 
