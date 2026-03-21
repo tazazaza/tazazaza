@@ -1,4 +1,4 @@
-// PIKUO オンライン対戦モード
+// PIKUO オンライン対戦モード（改良版）
 
 class OnlineGame {
     constructor() {
@@ -16,6 +16,11 @@ class OnlineGame {
         this.selectedCell = null;
         this.selectedCapturedIndex = null;
         this.capturedPieces = { player1: [], player2: [] };
+        this.draggedPiece = null;
+        this.draggedPiecePos = { x: 0, y: 0 };
+        this.highlightedMoves = [];
+        this.isMyTurn = false;
+        this.originalTitle = document.title;
     }
 
     init() {
@@ -66,6 +71,13 @@ class OnlineGame {
 
         document.getElementById('nextGame').addEventListener('click', () => {
             showScreen('waitingRoom');
+        });
+
+        // ページの可視性変更イベント
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden && this.isMyTurn) {
+                document.title = this.originalTitle;
+            }
         });
     }
 
@@ -128,6 +140,9 @@ class OnlineGame {
                 break;
             case 'gameStarted':
                 this.startGame(data);
+                break;
+            case 'validMoves':
+                this.showValidMoves(data.moves);
                 break;
             case 'moved':
                 this.handleMove(data);
@@ -310,6 +325,8 @@ class OnlineGame {
             };
         }
         this.boardRenderer.drawBoard(tempBoard);
+        
+        audioSystem.playPlace('C');
     }
 
     removePieceFromSetup(row, col) {
@@ -353,8 +370,7 @@ class OnlineGame {
         
         this.gameState.board = data.board;
         this.gameState.currentTurn = data.firstPlayer;
-        
-        document.getElementById('currentPlayer').textContent = data.firstPlayer;
+        this.updateTurnDisplay();
         
         const canvas = document.getElementById('gameCanvas');
         this.boardRenderer = new BoardRenderer(canvas);
@@ -382,12 +398,25 @@ class OnlineGame {
                 this.selectedCell = cell;
                 dragStartCell = cell;
                 isDragging = true;
+                this.draggedPiece = piece;
+                this.draggedPiecePos = { x: e.clientX, y: e.clientY };
                 
-                // 移動可能な場所をハイライト（クライアント側で簡易計算）
-                // 実際の判定はサーバー側で行う
-                this.boardRenderer.setHighlight([]);
-                this.boardRenderer.drawBoard(this.gameState.board);
+                // サーバーに移動可能範囲をリクエスト
+                this.send({
+                    type: 'getValidMoves',
+                    row: cell.row,
+                    col: cell.col
+                });
+                
+                canvas.style.cursor = 'grabbing';
             }
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            
+            this.draggedPiecePos = { x: e.clientX, y: e.clientY };
+            this.redrawWithDraggedPiece();
         });
 
         canvas.addEventListener('mouseup', (e) => {
@@ -412,9 +441,48 @@ class OnlineGame {
             isDragging = false;
             dragStartCell = null;
             this.selectedCell = null;
+            this.draggedPiece = null;
+            this.highlightedMoves = [];
             this.boardRenderer.clearHighlight();
             this.boardRenderer.drawBoard(this.gameState.board);
+            canvas.style.cursor = 'default';
         });
+    }
+
+    showValidMoves(moves) {
+        this.highlightedMoves = moves;
+        this.boardRenderer.setHighlight(moves);
+        this.boardRenderer.drawBoard(this.gameState.board);
+        
+        if (this.draggedPiece) {
+            this.redrawWithDraggedPiece();
+        }
+    }
+
+    redrawWithDraggedPiece() {
+        if (!this.draggedPiece) return;
+        
+        // 盤面を再描画
+        this.boardRenderer.drawBoard(this.gameState.board);
+        
+        // ドラッグ中の駒を描画
+        const canvas = document.getElementById('gameCanvas');
+        const rect = canvas.getBoundingClientRect();
+        const ctx = canvas.getContext('2d');
+        
+        ctx.save();
+        ctx.globalAlpha = 0.7;
+        ctx.shadowBlur = 20;
+        ctx.shadowColor = 'rgba(255, 255, 255, 0.5)';
+        
+        const x = this.draggedPiecePos.x - rect.left;
+        const y = this.draggedPiecePos.y - rect.top;
+        const rotation = this.draggedPiece.owner === 2 ? Math.PI : 0;
+        
+        PieceRenderer.draw(ctx, this.draggedPiece, x, y, this.boardRenderer.cellSize, 
+                          this.draggedPiece.owner, rotation);
+        
+        ctx.restore();
     }
 
     handleMove(data) {
@@ -438,9 +506,14 @@ class OnlineGame {
             audioSystem.playEvolution(data.evolvedPiece.level);
         }
         
+        // 音を鳴らす（相手の手の場合は違う音）
+        if (piece.owner !== this.myPlayerNum) {
+            audioSystem.playClick();
+        }
+        
         // ターン更新
         this.gameState.currentTurn = data.nextTurn;
-        document.getElementById('currentPlayer').textContent = data.nextTurn;
+        this.updateTurnDisplay();
         
         this.boardRenderer.drawBoard(this.gameState.board);
         this.updateCapturedDisplay();
@@ -450,13 +523,32 @@ class OnlineGame {
         this.gameState.board[data.row][data.col] = data.piece;
         this.gameState.currentTurn = data.nextTurn;
         
-        document.getElementById('currentPlayer').textContent = data.nextTurn;
+        this.updateTurnDisplay();
         
         const rank = PieceRenderer.getPieceRank(data.piece);
         audioSystem.playPlace(rank);
         
         this.boardRenderer.drawBoard(this.gameState.board);
         this.updateCapturedDisplay();
+    }
+
+    updateTurnDisplay() {
+        this.isMyTurn = this.gameState.currentTurn === this.myPlayerNum;
+        const turnText = this.isMyTurn ? 'YOUR TURN' : "OPPONENT'S TURN";
+        document.getElementById('currentPlayer').textContent = turnText;
+        
+        // 盤面の縁を光らせる
+        const boardContainer = document.querySelector('.board-container');
+        if (this.isMyTurn) {
+            boardContainer.classList.add('my-turn');
+            // 非アクティブ時はタブタイトルを変更
+            if (document.hidden) {
+                document.title = '[YOUR TURN] ' + this.originalTitle;
+            }
+        } else {
+            boardContainer.classList.remove('my-turn');
+            document.title = this.originalTitle;
+        }
     }
 
     updateCapturedDisplay() {
@@ -502,6 +594,8 @@ class OnlineGame {
         
         if (winner === this.myPlayerNum) {
             audioSystem.playEvolution(2); // 勝利音
+        } else {
+            audioSystem.playKingCaptured();
         }
     }
 
@@ -514,6 +608,8 @@ class OnlineGame {
         };
         this.setupPieces = [];
         this.capturedPieces = { player1: [], player2: [] };
+        this.isMyTurn = false;
+        document.title = this.originalTitle;
     }
 }
 

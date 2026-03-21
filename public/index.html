@@ -14,7 +14,6 @@
         </div>
         <div class="mode-buttons">
             <button class="mode-btn" id="onlineMode">ONLINE</button>
-            <button class="mode-btn" id="localMode">LOCAL</button>
         </div>
     </div>
 
@@ -100,45 +99,6 @@
         </div>
     </div>
 
-    <!-- ローカル対局画面 -->
-    <div id="localScreen" class="screen hidden">
-        <div class="game-header">
-            <h2 class="logo-small">PIKUO</h2>
-            <div class="turn-indicator">LOCAL GAME</div>
-            <button class="back-btn" id="backFromLocal">← BACK</button>
-        </div>
-
-        <div class="local-setup" id="localSetup">
-            <div class="cost-control">
-                <label for="localCostSlider">COST LIMIT: <span id="localCostValue">30</span></label>
-                <input type="range" id="localCostSlider" min="20" max="50" value="30">
-            </div>
-            <button class="mode-btn" id="startLocal">START SETUP</button>
-        </div>
-
-        <div class="local-game hidden" id="localGame">
-            <div class="game-container">
-                <div class="captured-area">
-                    <div class="captured-label">PLAYER 2 CAPTURED</div>
-                    <div class="captured-pieces" id="local2Captured"></div>
-                </div>
-
-                <div class="board-container">
-                    <canvas id="localCanvas" width="800" height="800"></canvas>
-                </div>
-
-                <div class="captured-area">
-                    <div class="captured-label">PLAYER 1 CAPTURED</div>
-                    <div class="captured-pieces" id="local1Captured"></div>
-                </div>
-            </div>
-
-            <div class="game-controls">
-                <button class="control-btn" id="resetLocal">RESET</button>
-            </div>
-        </div>
-    </div>
-
     <!-- 勝敗画面 -->
     <div id="resultScreen" class="screen hidden">
         <div class="result-container">
@@ -150,6 +110,5 @@
     <script src="audio.js"></script>
     <script src="game.js"></script>
     <script src="online.js"></script>
-    <script src="local.js"></script>
 </body>
 </html>

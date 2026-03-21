@@ -314,6 +314,21 @@ input[type="range"]::-webkit-slider-thumb {
 
 .board-container {
     position: relative;
+    transition: all 0.3s ease;
+}
+
+.board-container.my-turn {
+    box-shadow: 0 0 30px var(--glow-gold), 0 0 60px var(--glow-gold);
+    animation: turnPulse 2s ease-in-out infinite;
+}
+
+@keyframes turnPulse {
+    0%, 100% { 
+        box-shadow: 0 0 30px var(--glow-gold), 0 0 60px var(--glow-gold);
+    }
+    50% { 
+        box-shadow: 0 0 40px var(--glow-gold), 0 0 80px var(--glow-gold);
+    }
 }
 
 canvas {

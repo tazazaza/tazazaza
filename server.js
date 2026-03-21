@@ -1,14 +1,16 @@
 const express = require('express');
 const http = require('http');
 const WebSocket = require('ws');
-const path = require('path');
 
 const app = express();
-const server = http.createServer(app);
-const wss = new WebSocket.Server({ server });
 
-// 静的ファイルの配信
-app.use(express.static(path.join(__dirname, 'public')));
+// public フォルダ公開
+app.use(express.static('public'));
+
+const server = http.createServer(app);
+
+// WebSocketサーバー
+const wss = new WebSocket.Server({ server });
 
 // ゲーム状態の管理
 let gameState = {
@@ -27,25 +29,37 @@ let gameState = {
   }
 };
 
-// WebSocket接続管理
+// 接続時
 wss.on('connection', (ws) => {
-  console.log('新しい接続');
+  console.log('New client connected');
 
+  // 接続時に現在の状態を送信
+  sendGameState(ws);
+
+  // メッセージ受信
   ws.on('message', (message) => {
     try {
-      const data = JSON.parse(message);
-      handleMessage(ws, data);
+      const msg = message.toString();
+      console.log('Received:', msg);
+      
+      // JSONパース試行
+      try {
+        const data = JSON.parse(msg);
+        handleMessage(ws, data);
+      } catch (e) {
+        // JSONでない場合は単純なブロードキャスト（後方互換性）
+        broadcast(msg);
+      }
     } catch (error) {
       console.error('メッセージ処理エラー:', error);
     }
   });
 
+  // 切断時
   ws.on('close', () => {
+    console.log('Client disconnected');
     handleDisconnect(ws);
   });
-
-  // 接続時に現在の状態を送信
-  sendGameState(ws);
 });
 
 function handleMessage(ws, data) {
@@ -64,6 +78,9 @@ function handleMessage(ws, data) {
       break;
     case 'setupComplete':
       handleSetupComplete(ws, data.setup);
+      break;
+    case 'getValidMoves':
+      handleGetValidMoves(ws, data);
       break;
     case 'move':
       handleMove(ws, data);
@@ -124,6 +141,27 @@ function handleSetupComplete(ws, setup) {
       broadcast({ type: 'playerReady', player: ws.playerNum });
     }
   }
+}
+
+function handleGetValidMoves(ws, data) {
+  const { row, col } = data;
+  const piece = gameState.board[row][col];
+  
+  if (!piece) return;
+  
+  const validMoves = [];
+  for (let r = 0; r < 10; r++) {
+    for (let c = 0; c < 10; c++) {
+      if (isValidMove(piece, row, col, r, c)) {
+        validMoves.push({ row: r, col: c });
+      }
+    }
+  }
+  
+  ws.send(JSON.stringify({
+    type: 'validMoves',
+    moves: validMoves
+  }));
 }
 
 function validateSetup(setup) {
@@ -436,7 +474,9 @@ function sendGameState(ws) {
 }
 
 function broadcast(data) {
-  const message = JSON.stringify(data);
+  // dataが文字列ならそのまま、オブジェクトならJSON化
+  const message = typeof data === 'string' ? data : JSON.stringify(data);
+  
   wss.clients.forEach((client) => {
     if (client.readyState === WebSocket.OPEN) {
       client.send(message);

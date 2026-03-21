@@ -83,29 +83,37 @@ class PieceRenderer {
     }
     
     static drawKing(ctx, size, baseColor, colors) {
-        // 複雑な多面体（六角形ベース）
+        // 複雑な曼荼羅風デザイン
         const radius = size * 0.35;
+        
+        // 外側の複雑な花びら
         ctx.beginPath();
-        for (let i = 0; i < 6; i++) {
-            const angle = (Math.PI / 3) * i;
-            const x = Math.cos(angle) * radius;
-            const y = Math.sin(angle) * radius;
-            if (i === 0) ctx.moveTo(x, y);
-            else ctx.lineTo(x, y);
+        for (let i = 0; i < 8; i++) {
+            const angle = (Math.PI / 4) * i;
+            const x1 = Math.cos(angle) * radius;
+            const y1 = Math.sin(angle) * radius;
+            const x2 = Math.cos(angle + Math.PI / 8) * radius * 0.7;
+            const y2 = Math.sin(angle + Math.PI / 8) * radius * 0.7;
+            
+            if (i === 0) ctx.moveTo(x1, y1);
+            ctx.quadraticCurveTo(x2, y2, 
+                Math.cos(angle + Math.PI / 4) * radius, 
+                Math.sin(angle + Math.PI / 4) * radius);
         }
         ctx.closePath();
         ctx.fillStyle = baseColor;
         ctx.fill();
         ctx.strokeStyle = colors.border;
-        ctx.lineWidth = 3;
+        ctx.lineWidth = 2;
         ctx.stroke();
         
-        // 内側の小さい六角形
+        // 中心の複雑な星型
         ctx.beginPath();
-        for (let i = 0; i < 6; i++) {
-            const angle = (Math.PI / 3) * i;
-            const x = Math.cos(angle) * radius * 0.5;
-            const y = Math.sin(angle) * radius * 0.5;
+        for (let i = 0; i < 8; i++) {
+            const angle = (Math.PI / 4) * i;
+            const r = i % 2 === 0 ? radius * 0.5 : radius * 0.25;
+            const x = Math.cos(angle) * r;
+            const y = Math.sin(angle) * r;
             if (i === 0) ctx.moveTo(x, y);
             else ctx.lineTo(x, y);
         }
@@ -115,15 +123,17 @@ class PieceRenderer {
         ctx.stroke();
         
         // グロー効果
-        ctx.shadowBlur = 15;
+        ctx.shadowBlur = 20;
         ctx.shadowColor = colors.glow;
         ctx.stroke();
         ctx.shadowBlur = 0;
     }
     
     static drawGold(ctx, size, baseColor, colors) {
-        // 五角形（家型）
+        // 五芒星ベースの複雑なデザイン
         const radius = size * 0.35;
+        
+        // 五芒星
         ctx.beginPath();
         for (let i = 0; i < 5; i++) {
             const angle = (Math.PI * 2 / 5) * i - Math.PI / 2;
@@ -131,10 +141,22 @@ class PieceRenderer {
             const y = Math.sin(angle) * radius;
             if (i === 0) ctx.moveTo(x, y);
             else ctx.lineTo(x, y);
+            
+            const innerAngle = angle + Math.PI / 5;
+            const innerX = Math.cos(innerAngle) * radius * 0.4;
+            const innerY = Math.sin(innerAngle) * radius * 0.4;
+            ctx.lineTo(innerX, innerY);
         }
         ctx.closePath();
         ctx.fillStyle = baseColor;
         ctx.fill();
+        ctx.strokeStyle = colors.border;
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        
+        // 中心の円
+        ctx.beginPath();
+        ctx.arc(0, 0, radius * 0.2, 0, Math.PI * 2);
         ctx.strokeStyle = colors.border;
         ctx.lineWidth = 2;
         ctx.stroke();
@@ -143,7 +165,37 @@ class PieceRenderer {
     static drawSoldier(ctx, size, baseColor, colors, level) {
         const radius = size * 0.3;
         
-        // 中心の円
+        // レベル0: シンプルな円
+        if (level === 0) {
+            ctx.beginPath();
+            ctx.arc(0, 0, radius, 0, Math.PI * 2);
+            ctx.fillStyle = baseColor;
+            ctx.fill();
+            ctx.strokeStyle = colors.border;
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            return;
+        }
+        
+        // レベル1: 円 + 内側のリング
+        if (level === 1) {
+            ctx.beginPath();
+            ctx.arc(0, 0, radius, 0, Math.PI * 2);
+            ctx.fillStyle = baseColor;
+            ctx.fill();
+            ctx.strokeStyle = colors.border;
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            ctx.beginPath();
+            ctx.arc(0, 0, radius * 0.6, 0, Math.PI * 2);
+            ctx.strokeStyle = colors.border;
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            return;
+        }
+        
+        // レベル2: 円 + 複数のリング + 十字
         ctx.beginPath();
         ctx.arc(0, 0, radius, 0, Math.PI * 2);
         ctx.fillStyle = baseColor;
@@ -152,48 +204,56 @@ class PieceRenderer {
         ctx.lineWidth = 2;
         ctx.stroke();
         
-        // レベルに応じた突起
-        if (level >= 1) {
-            // 左右の突起
-            ctx.beginPath();
-            ctx.arc(-radius, 0, radius * 0.4, 0, Math.PI * 2);
-            ctx.arc(radius, 0, radius * 0.4, 0, Math.PI * 2);
-            ctx.fillStyle = baseColor;
-            ctx.fill();
-            ctx.strokeStyle = colors.border;
-            ctx.stroke();
-        }
+        ctx.beginPath();
+        ctx.arc(0, 0, radius * 0.7, 0, Math.PI * 2);
+        ctx.stroke();
         
-        if (level >= 2) {
-            // 上下の突起
-            ctx.beginPath();
-            ctx.arc(0, -radius, radius * 0.4, 0, Math.PI * 2);
-            ctx.arc(0, radius, radius * 0.4, 0, Math.PI * 2);
-            ctx.fillStyle = baseColor;
-            ctx.fill();
-            ctx.strokeStyle = colors.border;
-            ctx.stroke();
-        }
+        ctx.beginPath();
+        ctx.arc(0, 0, radius * 0.4, 0, Math.PI * 2);
+        ctx.stroke();
+        
+        // 十字
+        ctx.beginPath();
+        ctx.moveTo(-radius * 0.3, 0);
+        ctx.lineTo(radius * 0.3, 0);
+        ctx.moveTo(0, -radius * 0.3);
+        ctx.lineTo(0, radius * 0.3);
+        ctx.stroke();
     }
     
     static drawRook(ctx, size, baseColor, colors) {
-        // 十字型
-        const length = size * 0.35;
-        const width = size * 0.15;
+        // 城壁風の複雑なデザイン
+        const radius = size * 0.35;
         
+        // 外枠
         ctx.fillStyle = baseColor;
-        ctx.fillRect(-width / 2, -length, width, length * 2);
-        ctx.fillRect(-length, -width / 2, length * 2, width);
+        ctx.fillRect(-radius * 0.7, -radius, radius * 1.4, radius * 2);
+        
+        // 城壁のギザギザ
+        ctx.fillRect(-radius * 0.8, -radius * 1.1, radius * 0.4, radius * 0.2);
+        ctx.fillRect(-radius * 0.2, -radius * 1.1, radius * 0.4, radius * 0.2);
+        ctx.fillRect(radius * 0.4, -radius * 1.1, radius * 0.4, radius * 0.2);
         
         ctx.strokeStyle = colors.border;
         ctx.lineWidth = 2;
-        ctx.strokeRect(-width / 2, -length, width, length * 2);
-        ctx.strokeRect(-length, -width / 2, length * 2, width);
+        ctx.strokeRect(-radius * 0.7, -radius, radius * 1.4, radius * 2);
+        
+        // 内側の窓
+        ctx.strokeRect(-radius * 0.4, -radius * 0.5, radius * 0.8, radius * 0.5);
+        ctx.strokeRect(-radius * 0.4, radius * 0.2, radius * 0.8, radius * 0.5);
+        
+        // 縦のライン
+        ctx.beginPath();
+        ctx.moveTo(0, -radius);
+        ctx.lineTo(0, radius);
+        ctx.stroke();
     }
     
     static drawBishop(ctx, size, baseColor, colors) {
-        // ダイヤ型
+        // 複雑な螺旋ダイヤモンド
         const radius = size * 0.35;
+        
+        // ダイヤ型ベース
         ctx.beginPath();
         ctx.moveTo(0, -radius);
         ctx.lineTo(radius, 0);
@@ -205,84 +265,144 @@ class PieceRenderer {
         ctx.strokeStyle = colors.border;
         ctx.lineWidth = 2;
         ctx.stroke();
+        
+        // 内側の螺旋パターン
+        for (let i = 0; i < 4; i++) {
+            ctx.save();
+            ctx.rotate((Math.PI / 2) * i);
+            ctx.beginPath();
+            ctx.moveTo(0, -radius * 0.7);
+            ctx.quadraticCurveTo(radius * 0.3, -radius * 0.3, 0, 0);
+            ctx.strokeStyle = colors.border;
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+            ctx.restore();
+        }
+        
+        // 中心の小ダイヤ
+        ctx.beginPath();
+        ctx.moveTo(0, -radius * 0.3);
+        ctx.lineTo(radius * 0.3, 0);
+        ctx.lineTo(0, radius * 0.3);
+        ctx.lineTo(-radius * 0.3, 0);
+        ctx.closePath();
+        ctx.stroke();
     }
     
     static drawLance(ctx, size, baseColor, colors) {
-        // 縦長三角形
+        // 槍の穂先風デザイン
         const height = size * 0.4;
         const width = size * 0.25;
+        
+        // 穂先
         ctx.beginPath();
         ctx.moveTo(0, -height);
-        ctx.lineTo(width, height);
-        ctx.lineTo(-width, height);
+        ctx.lineTo(width * 0.8, -height * 0.5);
+        ctx.lineTo(width * 0.4, height);
+        ctx.lineTo(-width * 0.4, height);
+        ctx.lineTo(-width * 0.8, -height * 0.5);
         ctx.closePath();
         ctx.fillStyle = baseColor;
         ctx.fill();
         ctx.strokeStyle = colors.border;
         ctx.lineWidth = 2;
+        ctx.stroke();
+        
+        // 内側の装飾
+        ctx.beginPath();
+        ctx.moveTo(0, -height * 0.7);
+        ctx.lineTo(0, height * 0.7);
         ctx.stroke();
     }
     
     static drawSideLance(ctx, size, baseColor, colors) {
-        // 横長三角形
+        // 横向きの槍
         const height = size * 0.25;
         const width = size * 0.4;
+        
         ctx.beginPath();
         ctx.moveTo(width, 0);
-        ctx.lineTo(-width, height);
-        ctx.lineTo(-width, -height);
+        ctx.lineTo(width * 0.5, height * 0.8);
+        ctx.lineTo(-width, height * 0.4);
+        ctx.lineTo(-width, -height * 0.4);
+        ctx.lineTo(width * 0.5, -height * 0.8);
         ctx.closePath();
         ctx.fillStyle = baseColor;
         ctx.fill();
         ctx.strokeStyle = colors.border;
         ctx.lineWidth = 2;
+        ctx.stroke();
+        
+        ctx.beginPath();
+        ctx.moveTo(width * 0.7, 0);
+        ctx.lineTo(-width * 0.7, 0);
         ctx.stroke();
     }
     
     static drawVKnight(ctx, size, baseColor, colors) {
-        // L字型（縦基準）
+        // 稲妻型の複雑なデザイン
         const length = size * 0.35;
-        const width = size * 0.15;
+        
+        ctx.beginPath();
+        ctx.moveTo(-length * 0.3, -length);
+        ctx.lineTo(length * 0.3, -length);
+        ctx.lineTo(length * 0.3, -length * 0.2);
+        ctx.lineTo(length * 0.7, -length * 0.2);
+        ctx.lineTo(length * 0.7, length * 0.5);
+        ctx.lineTo(length * 0.1, length * 0.5);
+        ctx.lineTo(length * 0.1, length);
+        ctx.lineTo(-length * 0.3, length);
+        ctx.lineTo(-length * 0.3, -length);
+        ctx.closePath();
         
         ctx.fillStyle = baseColor;
-        ctx.fillRect(-width / 2, -length, width, length * 1.5);
-        ctx.fillRect(-width / 2, length * 0.3, length * 0.7, width);
-        
+        ctx.fill();
         ctx.strokeStyle = colors.border;
         ctx.lineWidth = 2;
-        ctx.strokeRect(-width / 2, -length, width, length * 1.5);
-        ctx.strokeRect(-width / 2, length * 0.3, length * 0.7, width);
+        ctx.stroke();
+        
+        // 内側の装飾
+        ctx.strokeRect(-length * 0.1, -length * 0.8, length * 0.2, length * 0.5);
     }
     
     static drawHKnight(ctx, size, baseColor, colors) {
-        // L字型（横基準）
+        // 横向き稲妻
         const length = size * 0.35;
-        const width = size * 0.15;
+        
+        ctx.beginPath();
+        ctx.moveTo(-length, -length * 0.3);
+        ctx.lineTo(-length, length * 0.3);
+        ctx.lineTo(-length * 0.2, length * 0.3);
+        ctx.lineTo(-length * 0.2, length * 0.7);
+        ctx.lineTo(length * 0.5, length * 0.7);
+        ctx.lineTo(length * 0.5, length * 0.1);
+        ctx.lineTo(length, length * 0.1);
+        ctx.lineTo(length, -length * 0.3);
+        ctx.lineTo(-length, -length * 0.3);
+        ctx.closePath();
         
         ctx.fillStyle = baseColor;
-        ctx.fillRect(-length, -width / 2, length * 1.5, width);
-        ctx.fillRect(length * 0.3, -width / 2, width, length * 0.7);
-        
+        ctx.fill();
         ctx.strokeStyle = colors.border;
         ctx.lineWidth = 2;
-        ctx.strokeRect(-length, -width / 2, length * 1.5, width);
-        ctx.strokeRect(length * 0.3, -width / 2, width, length * 0.7);
+        ctx.stroke();
+        
+        ctx.strokeRect(-length * 0.8, -length * 0.1, length * 0.5, length * 0.2);
     }
     
     static drawJump2(ctx, size, baseColor, colors) {
-        // 上下矢印
-        const height = size * 0.3;
-        const width = size * 0.2;
+        // 二重の六角形
+        const height = size * 0.35;
         
-        // 上矢印
+        // 外側の六角形
         ctx.beginPath();
-        ctx.moveTo(0, -height);
-        ctx.lineTo(width, -height * 0.5);
-        ctx.lineTo(width * 0.4, -height * 0.5);
-        ctx.lineTo(width * 0.4, 0);
-        ctx.lineTo(-width * 0.4, 0);
-        ctx.lineTo(-width * 0.4, -height * 0.5);
-        ctx.lineTo(-width, -height * 0.5);
+        for (let i = 0; i < 6; i++) {
+            const angle = (Math.PI / 3) * i + Math.PI / 6;
+            const x = Math.cos(angle) * height;
+            const y = Math.sin(angle) * height * 0.7;
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        }
         ctx.closePath();
         ctx.fillStyle = baseColor;
         ctx.fill();
@@ -290,19 +410,22 @@ class PieceRenderer {
         ctx.lineWidth = 2;
         ctx.stroke();
         
-        // 下矢印
+        // 内側の六角形
         ctx.beginPath();
-        ctx.moveTo(0, height);
-        ctx.lineTo(width, height * 0.5);
-        ctx.lineTo(width * 0.4, height * 0.5);
-        ctx.lineTo(width * 0.4, 0);
-        ctx.lineTo(-width * 0.4, 0);
-        ctx.lineTo(-width * 0.4, height * 0.5);
-        ctx.lineTo(-width, height * 0.5);
+        for (let i = 0; i < 6; i++) {
+            const angle = (Math.PI / 3) * i + Math.PI / 6;
+            const x = Math.cos(angle) * height * 0.5;
+            const y = Math.sin(angle) * height * 0.35;
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        }
         ctx.closePath();
-        ctx.fillStyle = baseColor;
-        ctx.fill();
-        ctx.strokeStyle = colors.border;
+        ctx.stroke();
+        
+        // 中心の線
+        ctx.beginPath();
+        ctx.moveTo(0, -height * 0.5);
+        ctx.lineTo(0, height * 0.5);
         ctx.stroke();
     }
 }
