@@ -32,6 +32,8 @@ class PieceRenderer {
         
         const rank = this.getPieceRank(piece);
         const colors = RANK_COLORS[rank];
+        
+        // Player1=赤、Player2=青
         const baseColor = owner === 1 ? '#ff4444' : '#4488ff';
         
         // PieceDesignsから描画関数を呼ぶ
@@ -54,6 +56,7 @@ class PieceRenderer {
         }
         return PIECES[piece.type]?.rank || 'C';
     }
+}
 
 // 盤面描画クラス
 class BoardRenderer {
