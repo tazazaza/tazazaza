@@ -37,11 +37,18 @@ class PieceRenderer {
         const baseColor = owner === 1 ? '#ff4444' : '#4488ff';
         
         // PieceDesignsから描画関数を呼ぶ
-        const drawMethod = `draw${piece.type.charAt(0).toUpperCase() + piece.type.slice(1)}`;
-        if (piece.type === 'soldier') {
-            PieceDesigns.drawSoldier(ctx, size, baseColor, colors, piece.level || 0);
-        } else if (PieceDesigns[drawMethod]) {
-            PieceDesigns[drawMethod](ctx, size, baseColor, colors);
+        if (typeof PieceDesigns !== 'undefined') {
+            const drawMethod = `draw${piece.type.charAt(0).toUpperCase() + piece.type.slice(1)}`;
+            if (piece.type === 'soldier') {
+                PieceDesigns.drawSoldier(ctx, size, baseColor, colors, piece.level || 0);
+            } else if (PieceDesigns[drawMethod]) {
+                PieceDesigns[drawMethod](ctx, size, baseColor, colors);
+            }
+        } else {
+            // PieceDesignsがまだ読み込まれていない場合はエラー
+            console.error('PieceDesigns is not loaded yet');
+            ctx.fillStyle = baseColor;
+            ctx.fillRect(-size/4, -size/4, size/2, size/2);
         }
         
         ctx.restore();
