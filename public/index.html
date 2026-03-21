@@ -6,26 +6,62 @@
 </head>
 <body>
   <h2>my_board_game チャットテスト</h2>
-  <div id="messages" style="border:1px solid #ccc; height:200px; overflow:auto;"></div>
+
+  <div id="messages"
+       style="border:1px solid #ccc; height:200px; overflow:auto;">
+  </div>
+
   <input id="msg" type="text" placeholder="メッセージ入力"/>
   <button onclick="sendMsg()">送信</button>
 
   <script>
-    const ws = new WebSocket(`ws://${location.host}`);
+    // ★ httpsならwss、httpならws
+    const protocol =
+      location.protocol === "https:" ? "wss:" : "ws:";
+
+    const ws = new WebSocket(
+      protocol + "//" + location.host
+    );
+
+    ws.onopen = () => {
+      console.log("WebSocket 接続成功");
+    };
+
+    ws.onerror = (err) => {
+      console.error("WebSocket error:", err);
+    };
 
     ws.onmessage = (event) => {
-      const div = document.getElementById('messages');
-      div.innerHTML += `<div>${event.data}</div>`;
+      const div = document.getElementById("messages");
+
+      div.innerHTML +=
+        "<div>" + event.data + "</div>";
+
       div.scrollTop = div.scrollHeight;
     };
 
     function sendMsg() {
-      const input = document.getElementById('msg');
-      if (input.value) {
+      const input = document.getElementById("msg");
+
+      if (
+        input.value &&
+        ws.readyState === WebSocket.OPEN
+      ) {
         ws.send(input.value);
-        input.value = '';
+        input.value = "";
       }
     }
+
+    // Enterキーでも送信
+    document
+      .getElementById("msg")
+      .addEventListener("keypress", function(e) {
+        if (e.key === "Enter") {
+          sendMsg();
+        }
+      });
+
   </script>
+
 </body>
 </html>
