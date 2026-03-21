@@ -6,7 +6,7 @@ class LocalGame {
         this.costLimit = 30;
         this.capturedPieces = { player1: [], player2: [] };
         this.currentSetup = { player: 1, pieces: [] };
-        this.setupPhase = true;
+        this.setupPhase = false;
         this.boardRenderer = null;
         this.draggedPiece = null;
         this.selectedCell = null;
@@ -17,6 +17,9 @@ class LocalGame {
         // イベントリスナーの設定
         document.getElementById('localMode').addEventListener('click', () => {
             showScreen('localScreen');
+            // localSetupを表示
+            document.getElementById('localSetup').classList.remove('hidden');
+            document.getElementById('localGame').classList.add('hidden');
         });
 
         document.getElementById('backFromLocal').addEventListener('click', () => {
@@ -40,6 +43,7 @@ class LocalGame {
     }
 
     startSetup() {
+        // 画面切り替え
         document.getElementById('localSetup').classList.add('hidden');
         document.getElementById('localGame').classList.remove('hidden');
 
@@ -53,6 +57,7 @@ class LocalGame {
         this.setupCanvasEvents(canvas);
         this.boardRenderer.drawBoard(this.board);
         
+        // ゲームフェーズに移行（セットアップフェーズは不要）
         this.setupPhase = false;
     }
 
