@@ -1,34 +1,53 @@
 // server.js
+
 const express = require('express');
 const http = require('http');
-const { WebSocketServer } = require('ws');
+const WebSocket = require('ws');
 
 const app = express();
-const server = http.createServer(app);
-const wss = new WebSocketServer({ server });
 
-// 静的ファイル（フロントHTMLやJS）を public フォルダから配信
+// public フォルダ公開
 app.use(express.static('public'));
 
-// WebSocket 接続時
+const server = http.createServer(app);
+
+// WebSocketサーバー
+const wss = new WebSocket.Server({ server });
+
+// 接続時
 wss.on('connection', (ws) => {
   console.log('New client connected');
 
+  // メッセージ受信
   ws.on('message', (message) => {
-    console.log(`Received: ${message}`);
-    // 受信したメッセージを全クライアントに送信
+
+    const msg = message.toString();
+
+    console.log('Received:', msg);
+
+    // 全クライアントへ送信（安定版）
     wss.clients.forEach((client) => {
-      if (client.readyState === client.OPEN) {
-        client.send(message.toString());
+
+      if (
+        client.readyState === WebSocket.OPEN
+      ) {
+        client.send(msg);
       }
+
     });
+
   });
 
+  // 切断時
   ws.on('close', () => {
     console.log('Client disconnected');
   });
+
 });
 
-// Renderが指定するポート、なければ3000
+// Render用ポート
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+server.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
