@@ -225,7 +225,10 @@ class OnlineGame {
         const canvas = document.getElementById('setupCanvas');
         this.boardRenderer = new BoardRenderer(canvas, 80, this.myPlayerNum);
         this.setupCanvasForPlacement(canvas);
-        this.boardRenderer.drawBoard(null);
+        
+        // 空の盤面を描画
+        const emptyBoard = Array(10).fill(null).map(() => Array(10).fill(null));
+        this.boardRenderer.drawBoard(emptyBoard);
         
         // 初期状態を履歴に保存
         this.saveSetupHistory();
@@ -247,20 +250,26 @@ class OnlineGame {
             canvas.height = 60;
             const ctx = canvas.getContext('2d');
             
-            // 駒を描画（自分のプレイヤー番号で色を決定）
-            const dummyPiece = { type: type, level: 0, owner: this.myPlayerNum };
-            const rank = PieceRenderer.getPieceRank(dummyPiece);
-            const colors = RANK_COLORS[rank];
-            const baseColor = this.myPlayerNum === 1 ? '#ff4444' : '#4488ff';
-            
-            const drawMethod = `draw${type.charAt(0).toUpperCase() + type.slice(1)}`;
-            if (type === 'soldier') {
-                PieceDesigns.drawSoldier(ctx, 60, baseColor, colors, 0);
-            } else if (PieceDesigns[drawMethod]) {
+            try {
+                // 駒を描画（自分のプレイヤー番号で色を決定）
+                const dummyPiece = { type: type, level: 0, owner: this.myPlayerNum };
+                const rank = PieceRenderer.getPieceRank(dummyPiece);
+                const colors = RANK_COLORS[rank];
+                const baseColor = this.myPlayerNum === 1 ? '#ff4444' : '#4488ff';
+                
                 ctx.save();
                 ctx.translate(30, 30);
-                PieceDesigns[drawMethod](ctx, 60, baseColor, colors);
+                
+                const drawMethod = `draw${type.charAt(0).toUpperCase() + type.slice(1)}`;
+                if (type === 'soldier') {
+                    PieceDesigns.drawSoldier(ctx, 60, baseColor, colors, 0);
+                } else if (PieceDesigns[drawMethod]) {
+                    PieceDesigns[drawMethod](ctx, 60, baseColor, colors);
+                }
+                
                 ctx.restore();
+            } catch (e) {
+                console.error('駒描画エラー:', type, e);
             }
             
             const costSpan = document.createElement('span');
