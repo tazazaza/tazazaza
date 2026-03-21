@@ -23,6 +23,307 @@ const RANK_COLORS = {
     'SPECIAL': { border: '#9b59b6', glow: 'rgba(155, 89, 182, 0.8)' }
 };
 
+// 駒デザイン定義（game.jsに統合）
+class PieceDesigns {
+    static drawKing(ctx, size, baseColor, colors) {
+        const radius = size * 0.38;
+        ctx.beginPath();
+        for (let i = 0; i < 8; i++) {
+            const angle = (Math.PI / 4) * i;
+            const outerR = i % 2 === 0 ? radius * 1.0 : radius * 0.7;
+            const x1 = Math.cos(angle) * outerR;
+            const y1 = Math.sin(angle) * outerR;
+            if (i === 0) ctx.moveTo(x1, y1);
+            else ctx.lineTo(x1, y1);
+        }
+        ctx.closePath();
+        ctx.fillStyle = baseColor;
+        ctx.fill();
+        ctx.strokeStyle = colors.border;
+        ctx.lineWidth = 3;
+        ctx.stroke();
+        ctx.shadowBlur = 25;
+        ctx.shadowColor = colors.glow;
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+        ctx.beginPath();
+        for (let i = 0; i < 4; i++) {
+            const angle = (Math.PI / 2) * i + Math.PI / 4;
+            const x = Math.cos(angle) * radius * 0.4;
+            const y = Math.sin(angle) * radius * 0.4;
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        }
+        ctx.closePath();
+        ctx.strokeStyle = colors.border;
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(0, 0, radius * 0.15, 0, Math.PI * 2);
+        ctx.fillStyle = colors.border;
+        ctx.fill();
+    }
+    
+    static drawGold(ctx, size, baseColor, colors) {
+        const radius = size * 0.36;
+        ctx.beginPath();
+        for (let i = 0; i < 6; i++) {
+            const angle = (Math.PI / 3) * i;
+            const x = Math.cos(angle) * radius;
+            const y = Math.sin(angle) * radius;
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        }
+        ctx.closePath();
+        ctx.fillStyle = baseColor;
+        ctx.fill();
+        ctx.strokeStyle = colors.border;
+        ctx.lineWidth = 2.5;
+        ctx.stroke();
+        ctx.beginPath();
+        for (let i = 0; i < 6; i++) {
+            const angle = (Math.PI / 3) * i;
+            const x = Math.cos(angle) * radius * 0.6;
+            const y = Math.sin(angle) * radius * 0.6;
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        }
+        ctx.closePath();
+        ctx.strokeStyle = colors.border;
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        for (let i = 0; i < 6; i++) {
+            const angle = (Math.PI / 3) * i;
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(Math.cos(angle) * radius * 0.6, Math.sin(angle) * radius * 0.6);
+            ctx.strokeStyle = colors.border;
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+        }
+    }
+    
+    static drawSoldier(ctx, size, baseColor, colors, level) {
+        const radius = size * 0.32;
+        if (level === 0) {
+            ctx.beginPath();
+            ctx.arc(0, 0, radius, 0, Math.PI * 2);
+            ctx.fillStyle = baseColor;
+            ctx.fill();
+            ctx.strokeStyle = colors.border;
+            ctx.lineWidth = 2.5;
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.arc(0, 0, radius * 0.2, 0, Math.PI * 2);
+            ctx.fillStyle = colors.border;
+            ctx.fill();
+        } else if (level === 1) {
+            ctx.beginPath();
+            ctx.arc(0, 0, radius, 0, Math.PI * 2);
+            ctx.fillStyle = baseColor;
+            ctx.fill();
+            ctx.strokeStyle = colors.border;
+            ctx.lineWidth = 2.5;
+            ctx.stroke();
+            for (let i = 0; i < 4; i++) {
+                const angle = (Math.PI / 2) * i;
+                ctx.beginPath();
+                ctx.arc(Math.cos(angle) * radius * 0.65, Math.sin(angle) * radius * 0.65, radius * 0.2, 0, Math.PI * 2);
+                ctx.fillStyle = colors.border;
+                ctx.fill();
+            }
+        } else {
+            ctx.beginPath();
+            ctx.arc(0, 0, radius, 0, Math.PI * 2);
+            ctx.fillStyle = baseColor;
+            ctx.fill();
+            ctx.strokeStyle = colors.border;
+            ctx.lineWidth = 2.5;
+            ctx.stroke();
+            for (let i = 0; i < 8; i++) {
+                const angle = (Math.PI / 4) * i;
+                ctx.beginPath();
+                ctx.arc(Math.cos(angle) * radius * 0.7, Math.sin(angle) * radius * 0.7, radius * 0.18, 0, Math.PI * 2);
+                ctx.fillStyle = colors.border;
+                ctx.fill();
+            }
+        }
+    }
+    
+    static drawRook(ctx, size, baseColor, colors) {
+        const length = size * 0.4;
+        const width = size * 0.22;
+        ctx.fillStyle = baseColor;
+        ctx.fillRect(-width / 2, -length, width, length * 2);
+        ctx.fillRect(-length, -width / 2, length * 2, width);
+        ctx.strokeStyle = colors.border;
+        ctx.lineWidth = 2.5;
+        ctx.strokeRect(-width / 2, -length, width, length * 2);
+        ctx.strokeRect(-length, -width / 2, length * 2, width);
+        ctx.shadowBlur = 20;
+        ctx.shadowColor = colors.glow;
+        ctx.strokeRect(-width / 2, -length, width, length * 2);
+        ctx.strokeRect(-length, -width / 2, length * 2, width);
+        ctx.shadowBlur = 0;
+        ctx.beginPath();
+        ctx.arc(0, 0, width * 0.6, 0, Math.PI * 2);
+        ctx.fillStyle = colors.border;
+        ctx.fill();
+    }
+    
+    static drawBishop(ctx, size, baseColor, colors) {
+        const length = size * 0.4;
+        ctx.save();
+        ctx.rotate(Math.PI / 4);
+        ctx.fillStyle = baseColor;
+        ctx.fillRect(-length * 0.7, -length * 0.7, length * 1.4, length * 1.4);
+        ctx.strokeStyle = colors.border;
+        ctx.lineWidth = 2.5;
+        ctx.strokeRect(-length * 0.7, -length * 0.7, length * 1.4, length * 1.4);
+        ctx.strokeRect(-length * 0.35, -length * 0.35, length * 0.7, length * 0.7);
+        ctx.restore();
+        ctx.shadowBlur = 20;
+        ctx.shadowColor = colors.glow;
+        ctx.save();
+        ctx.rotate(Math.PI / 4);
+        ctx.strokeRect(-length * 0.7, -length * 0.7, length * 1.4, length * 1.4);
+        ctx.restore();
+        ctx.shadowBlur = 0;
+        ctx.beginPath();
+        ctx.arc(0, 0, length * 0.2, 0, Math.PI * 2);
+        ctx.fillStyle = colors.border;
+        ctx.fill();
+    }
+    
+    static drawLance(ctx, size, baseColor, colors) {
+        const height = size * 0.42;
+        const width = size * 0.28;
+        ctx.beginPath();
+        ctx.moveTo(0, -height);
+        ctx.lineTo(width * 0.8, -height * 0.5);
+        ctx.lineTo(width * 0.4, -height * 0.5);
+        ctx.lineTo(width * 0.4, height * 0.7);
+        ctx.lineTo(-width * 0.4, height * 0.7);
+        ctx.lineTo(-width * 0.4, -height * 0.5);
+        ctx.lineTo(-width * 0.8, -height * 0.5);
+        ctx.closePath();
+        ctx.fillStyle = baseColor;
+        ctx.fill();
+        ctx.strokeStyle = colors.border;
+        ctx.lineWidth = 2.5;
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(0, -height * 0.8);
+        ctx.lineTo(0, height * 0.5);
+        ctx.strokeStyle = colors.border;
+        ctx.lineWidth = 2;
+        ctx.stroke();
+    }
+    
+    static drawSideLance(ctx, size, baseColor, colors) {
+        const height = size * 0.28;
+        const width = size * 0.42;
+        ctx.beginPath();
+        ctx.moveTo(width, 0);
+        ctx.lineTo(width * 0.5, -height * 0.8);
+        ctx.lineTo(width * 0.5, -height * 0.4);
+        ctx.lineTo(-width * 0.5, -height * 0.4);
+        ctx.lineTo(-width * 0.5, -height * 0.8);
+        ctx.lineTo(-width, 0);
+        ctx.lineTo(-width * 0.5, height * 0.8);
+        ctx.lineTo(-width * 0.5, height * 0.4);
+        ctx.lineTo(width * 0.5, height * 0.4);
+        ctx.lineTo(width * 0.5, height * 0.8);
+        ctx.closePath();
+        ctx.fillStyle = baseColor;
+        ctx.fill();
+        ctx.strokeStyle = colors.border;
+        ctx.lineWidth = 2.5;
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(-width * 0.8, 0);
+        ctx.lineTo(width * 0.8, 0);
+        ctx.strokeStyle = colors.border;
+        ctx.lineWidth = 2;
+        ctx.stroke();
+    }
+    
+    static drawVKnight(ctx, size, baseColor, colors) {
+        const length = size * 0.38;
+        const thickness = size * 0.16;
+        ctx.beginPath();
+        ctx.rect(-thickness / 2, -length, thickness, length * 1.3);
+        ctx.rect(-thickness / 2, length * 0.3, length * 0.8, thickness);
+        ctx.fillStyle = baseColor;
+        ctx.fill();
+        ctx.strokeStyle = colors.border;
+        ctx.lineWidth = 2.5;
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(0, -length * 0.6, thickness * 0.4, 0, Math.PI * 2);
+        ctx.arc(length * 0.4, length * 0.3 + thickness / 2, thickness * 0.4, 0, Math.PI * 2);
+        ctx.fillStyle = colors.border;
+        ctx.fill();
+    }
+    
+    static drawHKnight(ctx, size, baseColor, colors) {
+        const length = size * 0.38;
+        const thickness = size * 0.16;
+        ctx.beginPath();
+        ctx.rect(-length, -thickness / 2, length * 1.3, thickness);
+        ctx.rect(length * 0.3, -thickness / 2, thickness, length * 0.8);
+        ctx.fillStyle = baseColor;
+        ctx.fill();
+        ctx.strokeStyle = colors.border;
+        ctx.lineWidth = 2.5;
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(-length * 0.6, 0, thickness * 0.4, 0, Math.PI * 2);
+        ctx.arc(length * 0.3 + thickness / 2, length * 0.4, thickness * 0.4, 0, Math.PI * 2);
+        ctx.fillStyle = colors.border;
+        ctx.fill();
+    }
+    
+    static drawJump2(ctx, size, baseColor, colors) {
+        const radius = size * 0.38;
+        ctx.beginPath();
+        for (let i = 0; i < 4; i++) {
+            const angle = (Math.PI / 2) * i + Math.PI / 4;
+            const x = Math.cos(angle) * radius;
+            const y = Math.sin(angle) * radius;
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        }
+        ctx.closePath();
+        ctx.fillStyle = baseColor;
+        ctx.fill();
+        ctx.strokeStyle = colors.border;
+        ctx.lineWidth = 2.5;
+        ctx.stroke();
+        ctx.beginPath();
+        for (let i = 0; i < 4; i++) {
+            const angle = (Math.PI / 2) * i + Math.PI / 4;
+            const x = Math.cos(angle) * radius * 0.55;
+            const y = Math.sin(angle) * radius * 0.55;
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        }
+        ctx.closePath();
+        ctx.strokeStyle = colors.border;
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        for (let i = 0; i < 4; i++) {
+            const angle = (Math.PI / 2) * i;
+            const x = Math.cos(angle) * radius * 0.3;
+            const y = Math.sin(angle) * radius * 0.3;
+            ctx.beginPath();
+            ctx.arc(x, y, radius * 0.12, 0, Math.PI * 2);
+            ctx.fillStyle = colors.border;
+            ctx.fill();
+        }
+    }
+}
+
 // 駒の幾何学デザイン描画
 class PieceRenderer {
     static draw(ctx, piece, x, y, size, owner, rotation = 0) {
@@ -37,18 +338,11 @@ class PieceRenderer {
         const baseColor = owner === 1 ? '#ff4444' : '#4488ff';
         
         // PieceDesignsから描画関数を呼ぶ
-        if (typeof PieceDesigns !== 'undefined') {
-            const drawMethod = `draw${piece.type.charAt(0).toUpperCase() + piece.type.slice(1)}`;
-            if (piece.type === 'soldier') {
-                PieceDesigns.drawSoldier(ctx, size, baseColor, colors, piece.level || 0);
-            } else if (PieceDesigns[drawMethod]) {
-                PieceDesigns[drawMethod](ctx, size, baseColor, colors);
-            }
-        } else {
-            // PieceDesignsがまだ読み込まれていない場合はエラー
-            console.error('PieceDesigns is not loaded yet');
-            ctx.fillStyle = baseColor;
-            ctx.fillRect(-size/4, -size/4, size/2, size/2);
+        const drawMethod = `draw${piece.type.charAt(0).toUpperCase() + piece.type.slice(1)}`;
+        if (piece.type === 'soldier') {
+            PieceDesigns.drawSoldier(ctx, size, baseColor, colors, piece.level || 0);
+        } else if (PieceDesigns[drawMethod]) {
+            PieceDesigns[drawMethod](ctx, size, baseColor, colors);
         }
         
         ctx.restore();

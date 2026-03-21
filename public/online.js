@@ -227,10 +227,8 @@ class OnlineGame {
         const emptyBoard = Array(10).fill(null).map(() => Array(10).fill(null));
         this.boardRenderer.drawBoard(emptyBoard);
         
-        // 駒パレットの作成（少し遅延させる）
-        setTimeout(() => {
-            this.createPiecePalette();
-        }, 100);
+        // 駒パレットの作成
+        this.createPiecePalette();
         
         // 初期状態を履歴に保存
         this.saveSetupHistory();
@@ -239,13 +237,6 @@ class OnlineGame {
     createPiecePalette() {
         const container = document.getElementById('pieceList');
         container.innerHTML = '';
-        
-        // PieceDesignsがロードされていない場合は待つ
-        if (typeof PieceDesigns === 'undefined') {
-            console.log('Waiting for PieceDesigns to load...');
-            setTimeout(() => this.createPiecePalette(), 50);
-            return;
-        }
         
         for (const [type, info] of Object.entries(PIECES)) {
             const div = document.createElement('div');
@@ -292,8 +283,6 @@ class OnlineGame {
             
             container.appendChild(div);
         }
-        
-        console.log('Piece palette created successfully');
     }
 
     setupCanvasForPlacement(canvas) {
