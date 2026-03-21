@@ -1,5 +1,8 @@
-// PIKUO 駒デザイン定義
+// PIKUO 駒デザイン定義 v2.0
 // このファイルで駒のデザインを自由にカスタマイズできます
+// Last updated: 2026-03-22
+
+console.log('Loading PieceDesigns v2.0...');
 
 class PieceDesigns {
     static drawKing(ctx, size, baseColor, colors) {
@@ -387,3 +390,6 @@ class PieceDesigns {
         }
     }
 }
+
+// ロード確認
+console.log('PieceDesigns loaded successfully');
