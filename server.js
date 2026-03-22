@@ -314,11 +314,14 @@ function checkPieceMovement(piece, fromRow, fromCol, toRow, toCol) {
     case 'soldier':
       const level = piece.level || 0;
       if (level === 0) {
+        // Lv0: 前のみ
         return dr === direction && dc === 0;
       } else if (level === 1) {
-        return (dr === direction && Math.abs(dc) <= 1);
+        // Lv1: 前 + 左右
+        return (dr === direction && dc === 0) || (dr === 0 && Math.abs(dc) === 1);
       } else {
-        return (Math.abs(dr) <= 1 && Math.abs(dc) <= 1);
+        // Lv2: 十字（前後左右）
+        return (Math.abs(dr) === 1 && dc === 0) || (dr === 0 && Math.abs(dc) === 1);
       }
     
     case 'gold':

@@ -214,13 +214,13 @@ class OnlineGame {
         for (const [type, info] of Object.entries(PIECES)) {
             const div = document.createElement('div');
             div.className = 'piece-item';
-            div.draggable = true;
             div.dataset.type = type;
             
             // 小さいキャンバスで駒を描画
             const canvas = document.createElement('canvas');
             canvas.width = 60;
             canvas.height = 60;
+            canvas.draggable = true; // canvasのみドラッグ可能
             const ctx = canvas.getContext('2d');
             
             try {
@@ -245,12 +245,13 @@ class OnlineGame {
             div.appendChild(canvas);
             div.appendChild(costSpan);
             
-            div.addEventListener('dragstart', (e) => {
+            // canvasにのみイベントリスナーを追加
+            canvas.addEventListener('dragstart', (e) => {
                 e.dataTransfer.setData('pieceType', type);
                 div.classList.add('dragging');
             });
             
-            div.addEventListener('dragend', () => {
+            canvas.addEventListener('dragend', () => {
                 div.classList.remove('dragging');
             });
             
@@ -454,6 +455,35 @@ class OnlineGame {
         let isDragging = false;
         let dragStartCell = null;
 
+        // 持ち駒のドロップ処理
+        canvas.addEventListener('dragover', (e) => {
+            e.preventDefault();
+        });
+
+        canvas.addEventListener('drop', (e) => {
+            e.preventDefault();
+            
+            if (this.gameState.currentTurn !== this.myPlayerNum) return;
+            
+            const capturedIndex = e.dataTransfer.getData('capturedIndex');
+            if (capturedIndex === '') return;
+            
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            const cell = this.boardRenderer.getCellFromPosition(x, y);
+            
+            if (cell) {
+                // サーバーに配置を送信
+                this.send({
+                    type: 'placeFromHand',
+                    pieceIndex: parseInt(capturedIndex),
+                    row: cell.row,
+                    col: cell.col
+                });
+            }
+        });
+
         canvas.addEventListener('mousedown', (e) => {
             if (this.gameState.currentTurn !== this.myPlayerNum) return;
 
@@ -569,18 +599,11 @@ class OnlineGame {
             const playerKey = `player${captor}`;
             this.capturedPieces[playerKey].push(data.capturedPiece);
             
-            const rank = PieceRenderer.getPieceRank(data.capturedPiece);
-            audioSystem.playCapture(rank);
-        }
-        
-        // 進化した場合
-        if (data.evolvedPiece) {
-            audioSystem.playEvolution(data.evolvedPiece.level);
-        }
-        
-        // 音を鳴らす（相手の手の場合は違う音）
-        if (piece.owner !== this.myPlayerNum) {
-            audioSystem.playClick();
+            // 駒を取った音
+            audioSystem.playSword();
+        } else {
+            // 通常移動の音
+            audioSystem.playTap();
         }
         
         // ターン更新
@@ -597,8 +620,8 @@ class OnlineGame {
         
         this.updateTurnDisplay();
         
-        const rank = PieceRenderer.getPieceRank(data.piece);
-        audioSystem.playPlace(rank);
+        // 配置音
+        audioSystem.playTap();
         
         this.boardRenderer.drawBoard(this.gameState.board);
         this.updateCapturedDisplay();
@@ -633,10 +656,31 @@ class OnlineGame {
             this.capturedPieces[myKey].forEach((piece, index) => {
                 const div = document.createElement('div');
                 div.className = 'captured-piece';
-                div.textContent = PIECES[piece.type].name;
-                if (piece.level) {
-                    div.textContent += ` Lv${piece.level}`;
-                }
+                div.dataset.pieceIndex = index;
+                
+                // 駒をcanvasで描画
+                const canvas = document.createElement('canvas');
+                canvas.width = 50;
+                canvas.height = 50;
+                canvas.draggable = true;
+                canvas.style.cursor = 'grab';
+                const ctx = canvas.getContext('2d');
+                
+                // 駒を描画
+                PieceRenderer.draw(ctx, piece, 25, 25, 50, this.myPlayerNum, 0);
+                
+                div.appendChild(canvas);
+                
+                // ドラッグイベント
+                canvas.addEventListener('dragstart', (e) => {
+                    e.dataTransfer.setData('capturedIndex', index);
+                    canvas.style.opacity = '0.5';
+                });
+                
+                canvas.addEventListener('dragend', () => {
+                    canvas.style.opacity = '1';
+                });
+                
                 myContainer.appendChild(div);
             });
         }
@@ -650,10 +694,17 @@ class OnlineGame {
             this.capturedPieces[oppKey].forEach((piece) => {
                 const div = document.createElement('div');
                 div.className = 'captured-piece';
-                div.textContent = PIECES[piece.type].name;
-                if (piece.level) {
-                    div.textContent += ` Lv${piece.level}`;
-                }
+                
+                // 駒をcanvasで描画（相手の色）
+                const canvas = document.createElement('canvas');
+                canvas.width = 50;
+                canvas.height = 50;
+                const ctx = canvas.getContext('2d');
+                
+                const oppPlayerNum = this.myPlayerNum === 1 ? 2 : 1;
+                PieceRenderer.draw(ctx, piece, 25, 25, 50, oppPlayerNum, 0);
+                
+                div.appendChild(canvas);
                 oppContainer.appendChild(div);
             });
         }
