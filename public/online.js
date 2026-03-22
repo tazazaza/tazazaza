@@ -29,63 +29,36 @@ class OnlineGame {
         // WebSocket接続
         this.connectWebSocket();
 
-        // イベントリスナー
-        document.getElementById('onlineMode').addEventListener('click', () => {
-            showScreen('waitingRoom');
-        });
+        // イベントリスナー（存在するものだけ）
+        const addListener = (id, event, handler) => {
+            const elem = document.getElementById(id);
+            if (elem) elem.addEventListener(event, handler);
+        };
 
-        document.getElementById('backToMode').addEventListener('click', () => {
+        addListener('onlineMode', 'click', () => showScreen('waitingRoom'));
+        addListener('backToMode', 'click', () => {
             this.leaveGame();
             showScreen('modeSelect');
         });
-
-        document.getElementById('sitBtn1').addEventListener('click', () => {
-            this.sit(1);
-        });
-
-        document.getElementById('sitBtn2').addEventListener('click', () => {
-            this.sit(2);
-        });
-
-        document.getElementById('costSlider').addEventListener('input', (e) => {
+        addListener('sitBtn1', 'click', () => this.sit(1));
+        addListener('sitBtn2', 'click', () => this.sit(2));
+        addListener('costSlider', 'input', (e) => {
             const value = parseInt(e.target.value);
             document.getElementById('costValue').textContent = value;
             this.send({ type: 'setCostLimit', value });
         });
-
-        document.getElementById('readyBtn').addEventListener('click', () => {
-            this.sendSetupComplete();
-        });
-
-        document.getElementById('leaveSetup').addEventListener('click', () => {
-            this.leaveGame();
-        });
-
-        document.getElementById('undoBtn').addEventListener('click', () => {
-            this.undoSetup();
-        });
-
-        document.getElementById('redoBtn').addEventListener('click', () => {
-            this.redoSetup();
-        });
-
-        document.getElementById('resetBtn').addEventListener('click', () => {
-            this.resetSetup();
-        });
-
-        document.getElementById('surrenderBtn').addEventListener('click', () => {
+        addListener('readyBtn', 'click', () => this.sendSetupComplete());
+        addListener('leaveSetup', 'click', () => this.leaveGame());
+        addListener('undoBtn', 'click', () => this.undoSetup());
+        addListener('redoBtn', 'click', () => this.redoSetup());
+        addListener('resetBtn', 'click', () => this.resetSetup());
+        addListener('surrenderBtn', 'click', () => {
             if (confirm('本当に投了しますか？')) {
                 this.send({ type: 'surrender' });
             }
         });
-
-        document.getElementById('leaveGame').addEventListener('click', () => {
-            this.leaveGame();
-        });
-
-        document.getElementById('nextGame').addEventListener('click', () => {
-            showScreen('waitingRoom');
-        });
+        addListener('leaveGame', 'click', () => this.leaveGame());
+        addListener('nextGame', 'click', () => showScreen('waitingRoom'));
 
         // ページの可視性変更イベント
         document.addEventListener('visibilitychange', () => {
