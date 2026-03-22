@@ -23,6 +23,7 @@ class OnlineGame {
         this.originalTitle = document.title;
         this.setupHistory = [];
         this.setupHistoryIndex = -1;
+        this.lastMove = null; // 最後の手を記録
     }
 
     init() {
@@ -593,6 +594,12 @@ class OnlineGame {
         this.gameState.board[data.toRow][data.toCol] = piece;
         this.gameState.board[data.fromRow][data.fromCol] = null;
         
+        // 最後の手を記録
+        this.lastMove = {
+            from: { row: data.fromRow, col: data.fromCol },
+            to: { row: data.toRow, col: data.toCol }
+        };
+        
         // 駒を取った場合
         if (data.capturedPiece) {
             const captor = piece.owner;
@@ -610,6 +617,8 @@ class OnlineGame {
         this.gameState.currentTurn = data.nextTurn;
         this.updateTurnDisplay();
         
+        // 最後の手をハイライトして描画
+        this.boardRenderer.setLastMove(this.lastMove);
         this.boardRenderer.drawBoard(this.gameState.board);
         this.updateCapturedDisplay();
     }
@@ -618,11 +627,18 @@ class OnlineGame {
         this.gameState.board[data.row][data.col] = data.piece;
         this.gameState.currentTurn = data.nextTurn;
         
+        // 配置した場所を最後の手として記録
+        this.lastMove = {
+            from: null,
+            to: { row: data.row, col: data.col }
+        };
+        
         this.updateTurnDisplay();
         
         // 配置音
         audioSystem.playTap();
         
+        this.boardRenderer.setLastMove(this.lastMove);
         this.boardRenderer.drawBoard(this.gameState.board);
         this.updateCapturedDisplay();
     }

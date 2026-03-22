@@ -379,6 +379,7 @@ class BoardRenderer {
         this.highlightedCells = [];
         this.selectedPiece = null;
         this.playerNum = playerNum; // プレイヤー番号を保存
+        this.lastMove = null; // 最後の手
     }
     
     drawBoard(board, perspective = 1) {
@@ -414,6 +415,25 @@ class BoardRenderer {
                             this.cellSize, this.cellSize);
         }
         
+        // 最後の手をハイライト表示（黄色）
+        if (this.lastMove) {
+            this.ctx.fillStyle = 'rgba(255, 200, 0, 0.3)';
+            
+            // 移動元（持ち駒配置の場合はnull）
+            if (this.lastMove.from) {
+                const fromDisplayRow = isRotated ? 9 - this.lastMove.from.row : this.lastMove.from.row;
+                const fromDisplayCol = isRotated ? 9 - this.lastMove.from.col : this.lastMove.from.col;
+                this.ctx.fillRect(fromDisplayCol * this.cellSize, fromDisplayRow * this.cellSize, 
+                                this.cellSize, this.cellSize);
+            }
+            
+            // 移動先
+            const toDisplayRow = isRotated ? 9 - this.lastMove.to.row : this.lastMove.to.row;
+            const toDisplayCol = isRotated ? 9 - this.lastMove.to.col : this.lastMove.to.col;
+            this.ctx.fillRect(toDisplayCol * this.cellSize, toDisplayRow * this.cellSize, 
+                            this.cellSize, this.cellSize);
+        }
+        
         // 駒の描画
         if (board) {
             for (let row = 0; row < 10; row++) {
@@ -446,6 +466,14 @@ class BoardRenderer {
     
     clearHighlight() {
         this.highlightedCells = [];
+    }
+    
+    setLastMove(move) {
+        this.lastMove = move;
+    }
+    
+    clearLastMove() {
+        this.lastMove = null;
     }
     
     getCellFromPosition(x, y) {
