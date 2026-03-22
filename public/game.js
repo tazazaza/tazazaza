@@ -196,92 +196,103 @@ class PieceDesigns {
     }
     
     static drawLance(ctx, size, baseColor, colors) {
-        const height = size * 0.42;
-        const width = size * 0.28;
+        // 三角形 - 上下左右対称
+        const radius = size * 0.36;
         ctx.beginPath();
-        ctx.moveTo(0, -height);
-        ctx.lineTo(width * 0.8, -height * 0.5);
-        ctx.lineTo(width * 0.4, -height * 0.5);
-        ctx.lineTo(width * 0.4, height * 0.7);
-        ctx.lineTo(-width * 0.4, height * 0.7);
-        ctx.lineTo(-width * 0.4, -height * 0.5);
-        ctx.lineTo(-width * 0.8, -height * 0.5);
+        ctx.moveTo(0, -radius);
+        ctx.lineTo(radius * 0.866, radius * 0.5);
+        ctx.lineTo(-radius * 0.866, radius * 0.5);
         ctx.closePath();
         ctx.fillStyle = baseColor;
         ctx.fill();
         ctx.strokeStyle = colors.border;
         ctx.lineWidth = 2.5;
         ctx.stroke();
+        // 内側の三角形
         ctx.beginPath();
-        ctx.moveTo(0, -height * 0.8);
-        ctx.lineTo(0, height * 0.5);
+        ctx.moveTo(0, -radius * 0.5);
+        ctx.lineTo(radius * 0.433, radius * 0.25);
+        ctx.lineTo(-radius * 0.433, radius * 0.25);
+        ctx.closePath();
         ctx.strokeStyle = colors.border;
         ctx.lineWidth = 2;
         ctx.stroke();
     }
     
     static drawSideLance(ctx, size, baseColor, colors) {
-        const height = size * 0.28;
-        const width = size * 0.42;
+        // 逆三角形 - 上下左右対称（Lanceの逆）
+        const radius = size * 0.36;
         ctx.beginPath();
-        ctx.moveTo(width, 0);
-        ctx.lineTo(width * 0.5, -height * 0.8);
-        ctx.lineTo(width * 0.5, -height * 0.4);
-        ctx.lineTo(-width * 0.5, -height * 0.4);
-        ctx.lineTo(-width * 0.5, -height * 0.8);
-        ctx.lineTo(-width, 0);
-        ctx.lineTo(-width * 0.5, height * 0.8);
-        ctx.lineTo(-width * 0.5, height * 0.4);
-        ctx.lineTo(width * 0.5, height * 0.4);
-        ctx.lineTo(width * 0.5, height * 0.8);
+        ctx.moveTo(0, radius);
+        ctx.lineTo(radius * 0.866, -radius * 0.5);
+        ctx.lineTo(-radius * 0.866, -radius * 0.5);
         ctx.closePath();
         ctx.fillStyle = baseColor;
         ctx.fill();
         ctx.strokeStyle = colors.border;
         ctx.lineWidth = 2.5;
         ctx.stroke();
+        // 内側の三角形
         ctx.beginPath();
-        ctx.moveTo(-width * 0.8, 0);
-        ctx.lineTo(width * 0.8, 0);
+        ctx.moveTo(0, radius * 0.5);
+        ctx.lineTo(radius * 0.433, -radius * 0.25);
+        ctx.lineTo(-radius * 0.433, -radius * 0.25);
+        ctx.closePath();
         ctx.strokeStyle = colors.border;
         ctx.lineWidth = 2;
         ctx.stroke();
     }
     
     static drawVKnight(ctx, size, baseColor, colors) {
-        const length = size * 0.38;
-        const thickness = size * 0.16;
-        ctx.beginPath();
-        ctx.rect(-thickness / 2, -length, thickness, length * 1.3);
-        ctx.rect(-thickness / 2, length * 0.3, length * 0.8, thickness);
+        // 正方形 - 完全な上下左右対称
+        const length = size * 0.32;
         ctx.fillStyle = baseColor;
-        ctx.fill();
+        ctx.fillRect(-length, -length, length * 2, length * 2);
         ctx.strokeStyle = colors.border;
         ctx.lineWidth = 2.5;
-        ctx.stroke();
+        ctx.strokeRect(-length, -length, length * 2, length * 2);
+        // 内側の正方形
+        ctx.strokeRect(-length * 0.6, -length * 0.6, length * 1.2, length * 1.2);
+        // 4隅の点
         ctx.beginPath();
-        ctx.arc(0, -length * 0.6, thickness * 0.4, 0, Math.PI * 2);
-        ctx.arc(length * 0.4, length * 0.3 + thickness / 2, thickness * 0.4, 0, Math.PI * 2);
+        ctx.arc(-length * 0.5, -length * 0.5, length * 0.15, 0, Math.PI * 2);
+        ctx.arc(length * 0.5, -length * 0.5, length * 0.15, 0, Math.PI * 2);
+        ctx.arc(-length * 0.5, length * 0.5, length * 0.15, 0, Math.PI * 2);
+        ctx.arc(length * 0.5, length * 0.5, length * 0.15, 0, Math.PI * 2);
         ctx.fillStyle = colors.border;
         ctx.fill();
     }
     
     static drawHKnight(ctx, size, baseColor, colors) {
-        const length = size * 0.38;
-        const thickness = size * 0.16;
+        // 八角形 - 完全な上下左右対称
+        const radius = size * 0.36;
         ctx.beginPath();
-        ctx.rect(-length, -thickness / 2, length * 1.3, thickness);
-        ctx.rect(length * 0.3, -thickness / 2, thickness, length * 0.8);
+        for (let i = 0; i < 8; i++) {
+            const angle = (Math.PI / 4) * i;
+            const x = Math.cos(angle) * radius;
+            const y = Math.sin(angle) * radius;
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        }
+        ctx.closePath();
         ctx.fillStyle = baseColor;
         ctx.fill();
         ctx.strokeStyle = colors.border;
         ctx.lineWidth = 2.5;
         ctx.stroke();
+        // 内側の八角形
         ctx.beginPath();
-        ctx.arc(-length * 0.6, 0, thickness * 0.4, 0, Math.PI * 2);
-        ctx.arc(length * 0.3 + thickness / 2, length * 0.4, thickness * 0.4, 0, Math.PI * 2);
-        ctx.fillStyle = colors.border;
-        ctx.fill();
+        for (let i = 0; i < 8; i++) {
+            const angle = (Math.PI / 4) * i;
+            const x = Math.cos(angle) * radius * 0.6;
+            const y = Math.sin(angle) * radius * 0.6;
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        }
+        ctx.closePath();
+        ctx.strokeStyle = colors.border;
+        ctx.lineWidth = 2;
+        ctx.stroke();
     }
     
     static drawJump2(ctx, size, baseColor, colors) {

@@ -335,7 +335,13 @@ function checkPieceMovement(piece, fromRow, fromCol, toRow, toCol) {
       return Math.abs(dr) === Math.abs(dc) && isPathClear(fromRow, fromCol, toRow, toCol);
     
     case 'lance':
-      return dc === 0 && dr * direction < 0 && isPathClear(fromRow, fromCol, toRow, toCol);
+      // Player1は上向き（row減少）、Player2は下向き（row増加）
+      if (dc !== 0) return false; // 横移動は不可
+      if (piece.owner === 1) {
+        return dr < 0 && isPathClear(fromRow, fromCol, toRow, toCol);
+      } else {
+        return dr > 0 && isPathClear(fromRow, fromCol, toRow, toCol);
+      }
     
     case 'sideLance':
       return dr === 0 && dc !== 0 && isPathClear(fromRow, fromCol, toRow, toCol);

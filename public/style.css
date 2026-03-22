@@ -387,9 +387,10 @@ canvas {
 .piece-list {
     flex: 1;
     overflow-y: auto;
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     gap: 10px;
+    padding: 5px;
 }
 
 .piece-item {
