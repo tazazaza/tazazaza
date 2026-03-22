@@ -215,13 +215,13 @@ class OnlineGame {
         for (const [type, info] of Object.entries(PIECES)) {
             const div = document.createElement('div');
             div.className = 'piece-item';
+            div.draggable = true; // div全体をドラッグ可能に
             div.dataset.type = type;
             
             // 小さいキャンバスで駒を描画
             const canvas = document.createElement('canvas');
             canvas.width = 60;
             canvas.height = 60;
-            canvas.draggable = true; // canvasのみドラッグ可能
             const ctx = canvas.getContext('2d');
             
             try {
@@ -246,13 +246,13 @@ class OnlineGame {
             div.appendChild(canvas);
             div.appendChild(costSpan);
             
-            // canvasにのみイベントリスナーを追加
-            canvas.addEventListener('dragstart', (e) => {
+            // divにイベントリスナーを追加
+            div.addEventListener('dragstart', (e) => {
                 e.dataTransfer.setData('pieceType', type);
                 div.classList.add('dragging');
             });
             
-            canvas.addEventListener('dragend', () => {
+            div.addEventListener('dragend', () => {
                 div.classList.remove('dragging');
             });
             
@@ -323,7 +323,7 @@ class OnlineGame {
             }
         }
         
-        // 既に駒がある場合は削除
+        // 既に駒がある場合は削除（履歴は保存しない）
         const existingIndex = this.setupPieces.findIndex(p => p.row === row && p.col === col);
         if (existingIndex !== -1) {
             const existingPiece = this.setupPieces[existingIndex];
@@ -342,7 +342,7 @@ class OnlineGame {
         this.remainingCost -= PIECES[type].cost;
         document.getElementById('remainingCost').textContent = this.remainingCost;
         
-        // 履歴を保存
+        // 履歴を保存（1回だけ）
         this.saveSetupHistory();
         
         // 盤面を更新
@@ -609,8 +609,8 @@ class OnlineGame {
             // 駒を取った音
             audioSystem.playSword();
         } else {
-            // 通常移動の音
-            audioSystem.playTap();
+            // 通常移動の音（koma）
+            audioSystem.playKoma();
         }
         
         // ターン更新
@@ -635,8 +635,8 @@ class OnlineGame {
         
         this.updateTurnDisplay();
         
-        // 配置音
-        audioSystem.playTap();
+        // 配置音（koma）
+        audioSystem.playKoma();
         
         this.boardRenderer.setLastMove(this.lastMove);
         this.boardRenderer.drawBoard(this.gameState.board);

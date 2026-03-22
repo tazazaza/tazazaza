@@ -71,7 +71,8 @@ body::before {
 /* ヘルプボタン */
 .help-btn {
     position: absolute;
-    right: 20px;
+    left: 20px;
+    top: 10px;
     width: 40px;
     height: 40px;
     border-radius: 50%;
@@ -101,6 +102,10 @@ body::before {
     align-items: center;
     justify-content: center;
     z-index: 1000;
+}
+
+.modal.hidden {
+    display: none;
 }
 
 .modal-content {
@@ -139,29 +144,26 @@ body::before {
 .help-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 30px;
+    gap: 20px;
 }
 
 .help-item {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 15px;
-    padding: 20px;
+    justify-content: center;
+    padding: 15px;
     background: rgba(255, 255, 255, 0.02);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 8px;
 }
 
-.help-item canvas {
-    border: 1px solid rgba(255, 255, 255, 0.2);
+.help-item.wide {
+    grid-column: 1 / -1;
 }
 
-.help-item-text {
-    font-size: 14px;
-    text-align: center;
-    line-height: 1.6;
-    color: var(--text-secondary);
+.help-item canvas {
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 /* ロゴデザイン - 幾何学的 */
@@ -416,8 +418,9 @@ input[type="range"]::-webkit-slider-thumb {
     top: 40px;
     width: 90%;
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
     align-items: center;
+    gap: 15px;
 }
 
 .status-text {
@@ -430,6 +433,8 @@ input[type="range"]::-webkit-slider-thumb {
     font-size: 18px;
     font-weight: 600;
     letter-spacing: 2px;
+    color: var(--accent-gold);
+    text-shadow: 0 0 10px var(--glow-gold);
 }
 
 #remainingCost {

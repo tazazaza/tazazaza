@@ -1,5 +1,5 @@
 // PIKUO サウンドシステム
-// tap.mp3とsword.mp3を使用
+// tap.mp3（UI音）, koma.mp3（駒移動/配置）, sword.mp3（駒取得）
 
 class AudioSystem {
     constructor() {
@@ -9,18 +9,26 @@ class AudioSystem {
     }
 
     loadSounds() {
-        // tap.mp3とsword.mp3を読み込み
+        // 3つの音源を読み込み
         this.sounds.tap = new Audio('tap.mp3');
+        this.sounds.koma = new Audio('koma.mp3');
         this.sounds.sword = new Audio('sword.mp3');
         
         // 音量調整
         this.sounds.tap.volume = 0.5;
+        this.sounds.koma.volume = 0.5;
         this.sounds.sword.volume = 0.6;
     }
 
     playTap() {
         if (!this.enabled) return;
         const sound = this.sounds.tap.cloneNode();
+        sound.play().catch(e => console.log('Audio play failed:', e));
+    }
+
+    playKoma() {
+        if (!this.enabled) return;
+        const sound = this.sounds.koma.cloneNode();
         sound.play().catch(e => console.log('Audio play failed:', e));
     }
 
@@ -32,7 +40,7 @@ class AudioSystem {
 
     // 旧API互換性のため
     playHover() {
-        // ホバー音は無効化
+        this.playTap();
     }
 
     playClick() {
@@ -40,7 +48,8 @@ class AudioSystem {
     }
 
     playPlace(rank) {
-        this.playTap();
+        // 駒配置時はkoma音
+        this.playKoma();
     }
 
     playCapture(rank) {
@@ -48,7 +57,7 @@ class AudioSystem {
     }
 
     playEvolution(level) {
-        // 進化音は無効化（移動時の音バグを防ぐ）
+        // 進化音は無効化
     }
 
     playKingCaptured() {
