@@ -51,7 +51,10 @@
     <!-- セットアップ画面 -->
     <div id="setupScreen" class="screen hidden">
         <button class="help-btn" id="setupHelpBtn">?</button>
-        <button class="volume-btn" id="setupVolumeBtn">🔊</button>
+        <div class="volume-control" id="setupVolumeControl">
+            <span class="volume-icon">🔊</span>
+            <input type="range" class="volume-slider" min="0" max="100" value="50" id="setupVolumeSlider">
+        </div>
         <div class="setup-header">
             <h2 class="logo-small">PIKUO</h2>
             <div class="status-text">CONFIGURE YOUR PIECES</div>
@@ -90,7 +93,10 @@
     <!-- ゲーム画面 -->
     <div id="gameScreen" class="screen hidden">
         <button class="help-btn" id="gameHelpBtn">?</button>
-        <button class="volume-btn" id="gameVolumeBtn">🔊</button>
+        <div class="volume-control" id="gameVolumeControl">
+            <span class="volume-icon">🔊</span>
+            <input type="range" class="volume-slider" min="0" max="100" value="50" id="gameVolumeSlider">
+        </div>
         <div class="game-header">
             <h2 class="logo-small">PIKUO</h2>
             <div class="turn-indicator"><span id="currentPlayer">YOUR TURN</span></div>

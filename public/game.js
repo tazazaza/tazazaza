@@ -484,7 +484,7 @@ function showScreen(screenId) {
 document.addEventListener('DOMContentLoaded', () => {
     // すべてのボタンにクリック音
     document.querySelectorAll('button').forEach(button => {
-        // 音量ボタンは除外
+        // 音量関連ボタンは除外
         if (button.classList.contains('volume-btn')) return;
         
         button.addEventListener('click', () => {
@@ -496,19 +496,21 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
     
-    // 音量ボタンの設定
-    const volumeBtns = document.querySelectorAll('.volume-btn');
-    volumeBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            const isMuted = audioSystem.toggleMute();
-            volumeBtns.forEach(b => {
-                b.textContent = isMuted ? '🔇' : '🔊';
-                if (isMuted) {
-                    b.classList.add('muted');
-                } else {
-                    b.classList.remove('muted');
-                }
-            });
+    // 音量スライダーの設定
+    const volumeSliders = document.querySelectorAll('.volume-slider');
+    volumeSliders.forEach(slider => {
+        slider.addEventListener('input', (e) => {
+            const volume = e.target.value / 100;
+            audioSystem.setVolume(volume);
+            
+            // すべてのスライダーを同期
+            volumeSliders.forEach(s => s.value = e.target.value);
+            
+            // アイコンを更新
+            const icon = slider.parentElement.querySelector('.volume-icon');
+            if (icon) {
+                icon.textContent = volume === 0 ? '🔇' : volume < 0.5 ? '🔉' : '🔊';
+            }
         });
     });
 });
