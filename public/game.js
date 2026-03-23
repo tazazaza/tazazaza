@@ -23,96 +23,87 @@ const RANK_COLORS = {
     'SPECIAL': { border: '#9b59b6', glow: 'rgba(155, 89, 182, 0.8)' }
 };
 
-// 駒デザイン定義（確定デザイン + パターンB: リッチ発光）
+// 駒デザイン定義（game.jsに統合）
 class PieceDesigns {
-    // パターンB: リッチ発光のヘルパー関数
-    static applyRichGlow(ctx, owner, r) {
-        const color1 = owner === 1 ? '#ff4444' : '#4488ff';
-        const color2 = owner === 1 ? '#cc0000' : '#0044cc';
-        const colorLight = owner === 1 ? '#ff6666' : '#6699ff';
-        const glowColor = owner === 1 ? '#ff4444' : '#4488ff';
-        
-        // 発光
-        ctx.shadowBlur = 18;
-        ctx.shadowColor = glowColor;
-        
-        // グラデーション
-        const gradient = ctx.createRadialGradient(0, -r * 0.3, 0, 0, 0, r * 1.2);
-        gradient.addColorStop(0, colorLight);
-        gradient.addColorStop(1, color2);
-        
-        return {
-            fillStyle: gradient,
-            strokeStyle: '#ffffff',
-            lineWidth: 2.8
-        };
+    static drawKing(ctx, size, baseColor, colors) {
+        const radius = size * 0.38;
+        ctx.beginPath();
+        for (let i = 0; i < 8; i++) {
+            const angle = (Math.PI / 4) * i;
+            const outerR = i % 2 === 0 ? radius * 1.0 : radius * 0.7;
+            const x1 = Math.cos(angle) * outerR;
+            const y1 = Math.sin(angle) * outerR;
+            if (i === 0) ctx.moveTo(x1, y1);
+            else ctx.lineTo(x1, y1);
+        }
+        ctx.closePath();
+        ctx.fillStyle = baseColor;
+        ctx.fill();
+        ctx.strokeStyle = colors.border;
+        ctx.lineWidth = 3;
+        ctx.stroke();
+        ctx.shadowBlur = 25;
+        ctx.shadowColor = colors.glow;
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+        ctx.beginPath();
+        for (let i = 0; i < 4; i++) {
+            const angle = (Math.PI / 2) * i + Math.PI / 4;
+            const x = Math.cos(angle) * radius * 0.4;
+            const y = Math.sin(angle) * radius * 0.4;
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        }
+        ctx.closePath();
+        ctx.strokeStyle = colors.border;
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(0, 0, radius * 0.15, 0, Math.PI * 2);
+        ctx.fillStyle = colors.border;
+        ctx.fill();
     }
     
-    static drawKing(ctx, size, baseColor, colors, owner) {
-        const r = size * 0.3;
-        const styles = this.applyRichGlow(ctx, owner, r);
-        
-        ctx.fillStyle = styles.fillStyle;
-        ctx.strokeStyle = styles.strokeStyle;
-        ctx.lineWidth = styles.lineWidth;
-        
-        // #8: 放射円
+    static drawGold(ctx, size, baseColor, colors) {
+        const radius = size * 0.36;
         ctx.beginPath();
-        ctx.arc(0, 0, r, 0, Math.PI * 2);
+        for (let i = 0; i < 6; i++) {
+            const angle = (Math.PI / 3) * i;
+            const x = Math.cos(angle) * radius;
+            const y = Math.sin(angle) * radius;
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        }
+        ctx.closePath();
+        ctx.fillStyle = baseColor;
         ctx.fill();
+        ctx.strokeStyle = colors.border;
+        ctx.lineWidth = 2.5;
         ctx.stroke();
         ctx.beginPath();
-        ctx.arc(0, 0, r * 0.5, 0, Math.PI * 2);
+        for (let i = 0; i < 6; i++) {
+            const angle = (Math.PI / 3) * i;
+            const x = Math.cos(angle) * radius * 0.6;
+            const y = Math.sin(angle) * radius * 0.6;
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        }
+        ctx.closePath();
+        ctx.strokeStyle = colors.border;
+        ctx.lineWidth = 2;
         ctx.stroke();
-        for (let i = 0; i < 12; i++) {
-            const angle = (Math.PI / 6) * i;
+        for (let i = 0; i < 6; i++) {
+            const angle = (Math.PI / 3) * i;
             ctx.beginPath();
-            ctx.moveTo(Math.cos(angle) * r * 0.5, Math.sin(angle) * r * 0.5);
-            ctx.lineTo(Math.cos(angle) * r, Math.sin(angle) * r);
+            ctx.moveTo(0, 0);
+            ctx.lineTo(Math.cos(angle) * radius * 0.6, Math.sin(angle) * radius * 0.6);
+            ctx.strokeStyle = colors.border;
+            ctx.lineWidth = 1.5;
             ctx.stroke();
         }
-        
-        ctx.shadowBlur = 0;
     }
     
-    static drawGold(ctx, size, baseColor, colors, owner) {
-        const r = size * 0.3;
-        const styles = this.applyRichGlow(ctx, owner, r);
-        
-        ctx.fillStyle = styles.fillStyle;
-        ctx.strokeStyle = styles.strokeStyle;
-        ctx.lineWidth = styles.lineWidth;
-        
-        // #18: 厚リング六角
-        ctx.beginPath();
-        for (let i = 0; i < 6; i++) {
-            const angle = (Math.PI / 3) * i;
-            const x = Math.cos(angle) * r;
-            const y = Math.sin(angle) * r;
-            if (i === 0) ctx.moveTo(x, y);
-            else ctx.lineTo(x, y);
-        }
-        ctx.closePath();
-        ctx.fill();
-        ctx.stroke();
-        ctx.beginPath();
-        for (let i = 0; i < 6; i++) {
-            const angle = (Math.PI / 3) * i;
-            const x = Math.cos(angle) * r * 0.45;
-            const y = Math.sin(angle) * r * 0.45;
-            if (i === 0) ctx.moveTo(x, y);
-            else ctx.lineTo(x, y);
-        }
-        ctx.closePath();
-        ctx.fillStyle = '#0a0e1a';
-        ctx.fill();
-        ctx.strokeStyle = styles.strokeStyle;
-        ctx.stroke();
-        
-        ctx.shadowBlur = 0;
-    }
-    
-    static drawSoldier(ctx, size, baseColor, colors, level, owner) {
+    static drawSoldier(ctx, size, baseColor, colors, level) {
         const radius = size * 0.32;
         if (level === 0) {
             ctx.beginPath();
