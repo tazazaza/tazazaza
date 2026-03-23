@@ -484,12 +484,31 @@ function showScreen(screenId) {
 document.addEventListener('DOMContentLoaded', () => {
     // すべてのボタンにクリック音
     document.querySelectorAll('button').forEach(button => {
+        // 音量ボタンは除外
+        if (button.classList.contains('volume-btn')) return;
+        
         button.addEventListener('click', () => {
             audioSystem.playClick();
         });
         
         button.addEventListener('mouseenter', () => {
             audioSystem.playHover();
+        });
+    });
+    
+    // 音量ボタンの設定
+    const volumeBtns = document.querySelectorAll('.volume-btn');
+    volumeBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const isMuted = audioSystem.toggleMute();
+            volumeBtns.forEach(b => {
+                b.textContent = isMuted ? '🔇' : '🔊';
+                if (isMuted) {
+                    b.classList.add('muted');
+                } else {
+                    b.classList.remove('muted');
+                }
+            });
         });
     });
 });

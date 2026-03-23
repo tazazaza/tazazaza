@@ -5,6 +5,7 @@ class AudioSystem {
     constructor() {
         this.sounds = {};
         this.enabled = true;
+        this.volume = 0.5; // デフォルト音量
         this.loadSounds();
     }
 
@@ -15,9 +16,27 @@ class AudioSystem {
         this.sounds.sword = new Audio('sword.mp3');
         
         // 音量調整
-        this.sounds.tap.volume = 0.5;
-        this.sounds.koma.volume = 0.5;
-        this.sounds.sword.volume = 0.6;
+        this.updateVolume();
+    }
+    
+    updateVolume() {
+        this.sounds.tap.volume = this.volume * 1.0;
+        this.sounds.koma.volume = this.volume * 1.0;
+        this.sounds.sword.volume = this.volume * 1.2;
+    }
+    
+    setVolume(volume) {
+        this.volume = Math.max(0, Math.min(1, volume)); // 0-1の範囲
+        this.updateVolume();
+    }
+    
+    toggleMute() {
+        this.enabled = !this.enabled;
+        return this.enabled;
+    }
+    
+    isMuted() {
+        return !this.enabled;
     }
 
     playTap() {

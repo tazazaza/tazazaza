@@ -91,6 +91,35 @@ body::before {
     box-shadow: 0 0 20px var(--glow-blue);
 }
 
+.volume-btn {
+    position: absolute;
+    left: 20px;
+    bottom: 80px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid var(--accent-gold);
+    color: var(--accent-gold);
+    font-size: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.volume-btn:hover {
+    background: rgba(212, 175, 55, 0.2);
+    box-shadow: 0 0 20px var(--glow-gold);
+}
+
+.volume-btn.muted {
+    border-color: #666;
+    color: #666;
+}
+
 /* モーダル */
 .modal {
     position: fixed;
