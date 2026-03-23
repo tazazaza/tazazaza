@@ -130,6 +130,11 @@ function handleLeave(ws) {
 }
 
 function handleSetupComplete(ws, setup) {
+  if (!ws.playerNum) {
+    console.log('[SETUP ERROR] playerNum is undefined - client not seated properly');
+    return;
+  }
+  
   const player = `player${ws.playerNum}`;
   
   console.log(`[SETUP] Player ${ws.playerNum} sent setup complete`);
@@ -157,6 +162,11 @@ function handleSetupComplete(ws, setup) {
 }
 
 function handleCancelReady(ws) {
+  if (!ws.playerNum) {
+    console.log('[CANCEL ERROR] playerNum is undefined - client not seated properly');
+    return;
+  }
+  
   const player = `player${ws.playerNum}`;
   gameState.setupReady[player] = false;
   
