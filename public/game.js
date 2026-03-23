@@ -113,234 +113,205 @@ class PieceDesigns {
     }
     
     static drawSoldier(ctx, size, baseColor, colors, level, owner) {
-        const radius = size * 0.32;
+        const r = size * 0.3;
+        const styles = this.applyRichGlow(ctx, owner, r);
+        
+        ctx.fillStyle = styles.fillStyle;
+        ctx.strokeStyle = styles.strokeStyle;
+        ctx.lineWidth = styles.lineWidth;
+        
         if (level === 0) {
+            // #21: 円
             ctx.beginPath();
-            ctx.arc(0, 0, radius, 0, Math.PI * 2);
-            ctx.fillStyle = baseColor;
+            ctx.arc(0, 0, r, 0, Math.PI * 2);
             ctx.fill();
-            ctx.strokeStyle = colors.border;
-            ctx.lineWidth = 2.5;
             ctx.stroke();
-            ctx.beginPath();
-            ctx.arc(0, 0, radius * 0.2, 0, Math.PI * 2);
-            ctx.fillStyle = colors.border;
-            ctx.fill();
         } else if (level === 1) {
+            // #22: 二重円
             ctx.beginPath();
-            ctx.arc(0, 0, radius, 0, Math.PI * 2);
-            ctx.fillStyle = baseColor;
+            ctx.arc(0, 0, r, 0, Math.PI * 2);
             ctx.fill();
-            ctx.strokeStyle = colors.border;
-            ctx.lineWidth = 2.5;
             ctx.stroke();
-            for (let i = 0; i < 4; i++) {
-                const angle = (Math.PI / 2) * i;
-                ctx.beginPath();
-                ctx.arc(Math.cos(angle) * radius * 0.65, Math.sin(angle) * radius * 0.65, radius * 0.2, 0, Math.PI * 2);
-                ctx.fillStyle = colors.border;
-                ctx.fill();
-            }
+            ctx.beginPath();
+            ctx.arc(0, 0, r * 0.55, 0, Math.PI * 2);
+            ctx.stroke();
         } else {
-            ctx.beginPath();
-            ctx.arc(0, 0, radius, 0, Math.PI * 2);
-            ctx.fillStyle = baseColor;
-            ctx.fill();
-            ctx.strokeStyle = colors.border;
-            ctx.lineWidth = 2.5;
-            ctx.stroke();
-            for (let i = 0; i < 8; i++) {
-                const angle = (Math.PI / 4) * i;
+            // #28: 三重円
+            for (let i = 3; i >= 1; i--) {
                 ctx.beginPath();
-                ctx.arc(Math.cos(angle) * radius * 0.7, Math.sin(angle) * radius * 0.7, radius * 0.18, 0, Math.PI * 2);
-                ctx.fillStyle = colors.border;
-                ctx.fill();
+                ctx.arc(0, 0, r * (i / 3), 0, Math.PI * 2);
+                if (i === 3) ctx.fill();
+                ctx.stroke();
             }
         }
-    }
-    
-    static drawRook(ctx, size, baseColor, colors) {
-        const length = size * 0.4;
-        const width = size * 0.22;
-        ctx.fillStyle = baseColor;
-        ctx.fillRect(-width / 2, -length, width, length * 2);
-        ctx.fillRect(-length, -width / 2, length * 2, width);
-        ctx.strokeStyle = colors.border;
-        ctx.lineWidth = 2.5;
-        ctx.strokeRect(-width / 2, -length, width, length * 2);
-        ctx.strokeRect(-length, -width / 2, length * 2, width);
-        ctx.shadowBlur = 20;
-        ctx.shadowColor = colors.glow;
-        ctx.strokeRect(-width / 2, -length, width, length * 2);
-        ctx.strokeRect(-length, -width / 2, length * 2, width);
+        
         ctx.shadowBlur = 0;
-        ctx.beginPath();
-        ctx.arc(0, 0, width * 0.6, 0, Math.PI * 2);
-        ctx.fillStyle = colors.border;
-        ctx.fill();
     }
     
-    static drawBishop(ctx, size, baseColor, colors) {
-        const length = size * 0.4;
-        ctx.save();
-        ctx.rotate(Math.PI / 4);
-        ctx.fillStyle = baseColor;
-        ctx.fillRect(-length * 0.7, -length * 0.7, length * 1.4, length * 1.4);
-        ctx.strokeStyle = colors.border;
-        ctx.lineWidth = 2.5;
-        ctx.strokeRect(-length * 0.7, -length * 0.7, length * 1.4, length * 1.4);
-        ctx.strokeRect(-length * 0.35, -length * 0.35, length * 0.7, length * 0.7);
-        ctx.restore();
-        ctx.shadowBlur = 20;
-        ctx.shadowColor = colors.glow;
-        ctx.save();
-        ctx.rotate(Math.PI / 4);
-        ctx.strokeRect(-length * 0.7, -length * 0.7, length * 1.4, length * 1.4);
-        ctx.restore();
-        ctx.shadowBlur = 0;
-        ctx.beginPath();
-        ctx.arc(0, 0, length * 0.2, 0, Math.PI * 2);
-        ctx.fillStyle = colors.border;
-        ctx.fill();
-    }
-    
-    static drawLance(ctx, size, baseColor, colors) {
-        // 三角形 - 上下左右対称
-        const radius = size * 0.36;
-        ctx.beginPath();
-        ctx.moveTo(0, -radius);
-        ctx.lineTo(radius * 0.866, radius * 0.5);
-        ctx.lineTo(-radius * 0.866, radius * 0.5);
-        ctx.closePath();
-        ctx.fillStyle = baseColor;
-        ctx.fill();
-        ctx.strokeStyle = colors.border;
-        ctx.lineWidth = 2.5;
-        ctx.stroke();
-        // 内側の三角形
-        ctx.beginPath();
-        ctx.moveTo(0, -radius * 0.5);
-        ctx.lineTo(radius * 0.433, radius * 0.25);
-        ctx.lineTo(-radius * 0.433, radius * 0.25);
-        ctx.closePath();
-        ctx.strokeStyle = colors.border;
-        ctx.lineWidth = 2;
-        ctx.stroke();
-    }
-    
-    static drawSideLance(ctx, size, baseColor, colors) {
-        // 逆三角形 - 上下左右対称（Lanceの逆）
-        const radius = size * 0.36;
-        ctx.beginPath();
-        ctx.moveTo(0, radius);
-        ctx.lineTo(radius * 0.866, -radius * 0.5);
-        ctx.lineTo(-radius * 0.866, -radius * 0.5);
-        ctx.closePath();
-        ctx.fillStyle = baseColor;
-        ctx.fill();
-        ctx.strokeStyle = colors.border;
-        ctx.lineWidth = 2.5;
-        ctx.stroke();
-        // 内側の三角形
-        ctx.beginPath();
-        ctx.moveTo(0, radius * 0.5);
-        ctx.lineTo(radius * 0.433, -radius * 0.25);
-        ctx.lineTo(-radius * 0.433, -radius * 0.25);
-        ctx.closePath();
-        ctx.strokeStyle = colors.border;
-        ctx.lineWidth = 2;
-        ctx.stroke();
-    }
-    
-    static drawVKnight(ctx, size, baseColor, colors) {
-        // 正方形 - 完全な上下左右対称
-        const length = size * 0.32;
-        ctx.fillStyle = baseColor;
-        ctx.fillRect(-length, -length, length * 2, length * 2);
-        ctx.strokeStyle = colors.border;
-        ctx.lineWidth = 2.5;
-        ctx.strokeRect(-length, -length, length * 2, length * 2);
-        // 内側の正方形
-        ctx.strokeRect(-length * 0.6, -length * 0.6, length * 1.2, length * 1.2);
-        // 4隅の点
-        ctx.beginPath();
-        ctx.arc(-length * 0.5, -length * 0.5, length * 0.15, 0, Math.PI * 2);
-        ctx.arc(length * 0.5, -length * 0.5, length * 0.15, 0, Math.PI * 2);
-        ctx.arc(-length * 0.5, length * 0.5, length * 0.15, 0, Math.PI * 2);
-        ctx.arc(length * 0.5, length * 0.5, length * 0.15, 0, Math.PI * 2);
-        ctx.fillStyle = colors.border;
-        ctx.fill();
-    }
-    
-    static drawHKnight(ctx, size, baseColor, colors) {
-        // 八角形 - 完全な上下左右対称
-        const radius = size * 0.36;
-        ctx.beginPath();
-        for (let i = 0; i < 8; i++) {
-            const angle = (Math.PI / 4) * i;
-            const x = Math.cos(angle) * radius;
-            const y = Math.sin(angle) * radius;
-            if (i === 0) ctx.moveTo(x, y);
-            else ctx.lineTo(x, y);
-        }
-        ctx.closePath();
-        ctx.fillStyle = baseColor;
-        ctx.fill();
-        ctx.strokeStyle = colors.border;
-        ctx.lineWidth = 2.5;
-        ctx.stroke();
-        // 内側の八角形
-        ctx.beginPath();
-        for (let i = 0; i < 8; i++) {
-            const angle = (Math.PI / 4) * i;
-            const x = Math.cos(angle) * radius * 0.6;
-            const y = Math.sin(angle) * radius * 0.6;
-            if (i === 0) ctx.moveTo(x, y);
-            else ctx.lineTo(x, y);
-        }
-        ctx.closePath();
-        ctx.strokeStyle = colors.border;
-        ctx.lineWidth = 2;
-        ctx.stroke();
-    }
-    
-    static drawJump2(ctx, size, baseColor, colors) {
-        const radius = size * 0.38;
-        ctx.beginPath();
-        for (let i = 0; i < 4; i++) {
-            const angle = (Math.PI / 2) * i + Math.PI / 4;
-            const x = Math.cos(angle) * radius;
-            const y = Math.sin(angle) * radius;
-            if (i === 0) ctx.moveTo(x, y);
-            else ctx.lineTo(x, y);
-        }
-        ctx.closePath();
-        ctx.fillStyle = baseColor;
-        ctx.fill();
-        ctx.strokeStyle = colors.border;
-        ctx.lineWidth = 2.5;
-        ctx.stroke();
-        ctx.beginPath();
-        for (let i = 0; i < 4; i++) {
-            const angle = (Math.PI / 2) * i + Math.PI / 4;
-            const x = Math.cos(angle) * radius * 0.55;
-            const y = Math.sin(angle) * radius * 0.55;
-            if (i === 0) ctx.moveTo(x, y);
-            else ctx.lineTo(x, y);
-        }
-        ctx.closePath();
-        ctx.strokeStyle = colors.border;
-        ctx.lineWidth = 2;
-        ctx.stroke();
+    static drawRook(ctx, size, baseColor, colors, owner) {
+        const r = size * 0.3;
+        const styles = this.applyRichGlow(ctx, owner, r);
+        
+        ctx.fillStyle = styles.fillStyle;
+        ctx.strokeStyle = styles.strokeStyle;
+        ctx.lineWidth = styles.lineWidth;
+        
+        // R9: 矢印風十字
+        const w = r * 0.4;
+        const h = r * 1.25;
+        ctx.fillRect(-w/2, -h/2, w, h);
+        ctx.fillRect(-h/2, -w/2, h, w);
+        ctx.strokeRect(-w/2, -h/2, w, h);
+        ctx.strokeRect(-h/2, -w/2, h, w);
+        // 4方向に小さい三角
         for (let i = 0; i < 4; i++) {
             const angle = (Math.PI / 2) * i;
-            const x = Math.cos(angle) * radius * 0.3;
-            const y = Math.sin(angle) * radius * 0.3;
+            ctx.save();
+            ctx.rotate(angle);
             ctx.beginPath();
-            ctx.arc(x, y, radius * 0.12, 0, Math.PI * 2);
-            ctx.fillStyle = colors.border;
+            ctx.moveTo(0, -h/2 - r * 0.15);
+            ctx.lineTo(r * 0.2, -h/2);
+            ctx.lineTo(-r * 0.2, -h/2);
+            ctx.closePath();
             ctx.fill();
+            ctx.stroke();
+            ctx.restore();
         }
+        
+        ctx.shadowBlur = 0;
+    }
+    
+    static drawBishop(ctx, size, baseColor, colors, owner) {
+        const r = size * 0.3;
+        const styles = this.applyRichGlow(ctx, owner, r);
+        
+        ctx.save();
+        ctx.rotate(Math.PI / 4);
+        
+        ctx.fillStyle = styles.fillStyle;
+        ctx.strokeStyle = styles.strokeStyle;
+        ctx.lineWidth = styles.lineWidth;
+        
+        // B9: 矢印風X
+        const w = r * 0.4;
+        const h = r * 1.3;
+        ctx.fillRect(-w/2, -h/2, w, h);
+        ctx.fillRect(-h/2, -w/2, h, w);
+        ctx.strokeRect(-w/2, -h/2, w, h);
+        ctx.strokeRect(-h/2, -w/2, h, w);
+        // 4方向に小さい三角
+        for (let i = 0; i < 4; i++) {
+            const angle = (Math.PI / 2) * i;
+            ctx.save();
+            ctx.rotate(angle);
+            ctx.beginPath();
+            ctx.moveTo(0, -h/2 - r * 0.15);
+            ctx.lineTo(r * 0.2, -h/2);
+            ctx.lineTo(-r * 0.2, -h/2);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            ctx.restore();
+        }
+        
+        ctx.restore();
+        ctx.shadowBlur = 0;
+    }
+    
+    static drawLance(ctx, size, baseColor, colors, owner) {
+        const r = size * 0.3;
+        const styles = this.applyRichGlow(ctx, owner, r);
+        
+        ctx.fillStyle = styles.fillStyle;
+        ctx.strokeStyle = styles.strokeStyle;
+        ctx.lineWidth = styles.lineWidth;
+        
+        // #55: 縦六角
+        ctx.beginPath();
+        ctx.moveTo(0, -r * 1.15);
+        ctx.lineTo(r * 0.55, -r * 0.55);
+        ctx.lineTo(r * 0.55, r * 0.55);
+        ctx.lineTo(0, r * 1.15);
+        ctx.lineTo(-r * 0.55, r * 0.55);
+        ctx.lineTo(-r * 0.55, -r * 0.55);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+        
+        ctx.shadowBlur = 0;
+    }
+    
+    static drawSideLance(ctx, size, baseColor, colors, owner) {
+        const r = size * 0.3;
+        const styles = this.applyRichGlow(ctx, owner, r);
+        
+        ctx.fillStyle = styles.fillStyle;
+        ctx.strokeStyle = styles.strokeStyle;
+        ctx.lineWidth = styles.lineWidth;
+        
+        // #64: 横六角
+        ctx.beginPath();
+        ctx.moveTo(-r * 1.15, 0);
+        ctx.lineTo(-r * 0.55, r * 0.55);
+        ctx.lineTo(r * 0.55, r * 0.55);
+        ctx.lineTo(r * 1.15, 0);
+        ctx.lineTo(r * 0.55, -r * 0.55);
+        ctx.lineTo(-r * 0.55, -r * 0.55);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+        
+        ctx.shadowBlur = 0;
+    }
+    
+    static drawVKnight(ctx, size, baseColor, colors, owner) {
+        const r = size * 0.3;
+        const styles = this.applyRichGlow(ctx, owner, r);
+        
+        ctx.fillStyle = styles.fillStyle;
+        ctx.strokeStyle = styles.strokeStyle;
+        ctx.lineWidth = styles.lineWidth;
+        
+        // 縦楕円
+        ctx.beginPath();
+        ctx.ellipse(0, 0, r * 0.52, r * 1.25, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        
+        ctx.shadowBlur = 0;
+    }
+    
+    static drawHKnight(ctx, size, baseColor, colors, owner) {
+        const r = size * 0.3;
+        const styles = this.applyRichGlow(ctx, owner, r);
+        
+        ctx.fillStyle = styles.fillStyle;
+        ctx.strokeStyle = styles.strokeStyle;
+        ctx.lineWidth = styles.lineWidth;
+        
+        // 横楕円
+        ctx.beginPath();
+        ctx.ellipse(0, 0, r * 1.25, r * 0.52, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        
+        ctx.shadowBlur = 0;
+    }
+    
+    static drawJump2(ctx, size, baseColor, colors, owner) {
+        const r = size * 0.3;
+        const styles = this.applyRichGlow(ctx, owner, r);
+        
+        ctx.fillStyle = styles.fillStyle;
+        ctx.strokeStyle = styles.strokeStyle;
+        ctx.lineWidth = styles.lineWidth;
+        
+        // #36: 縦矩形
+        ctx.fillRect(-r * 0.45, -r * 1.15, r * 0.9, r * 2.3);
+        ctx.strokeRect(-r * 0.45, -r * 1.15, r * 0.9, r * 2.3);
+        ctx.strokeRect(-r * 0.25, -r * 0.95, r * 0.5, r * 1.9);
+        
+        ctx.shadowBlur = 0;
     }
 }
 
