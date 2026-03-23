@@ -70,6 +70,16 @@
                     <button class="control-btn small" id="redoBtn">REDO →</button>
                     <button class="control-btn small" id="resetBtn">RESET</button>
                 </div>
+                <div class="ready-status">
+                    <div class="ready-indicator" id="myReadyStatus">
+                        <span class="ready-label">YOU:</span>
+                        <span class="ready-state">NOT READY</span>
+                    </div>
+                    <div class="ready-indicator" id="oppReadyStatus">
+                        <span class="ready-label">OPPONENT:</span>
+                        <span class="ready-state">NOT READY</span>
+                    </div>
+                </div>
                 <button class="ready-btn" id="readyBtn">READY</button>
                 <button class="leave-btn" id="leaveSetup">LEAVE</button>
             </div>
@@ -124,7 +134,6 @@
     </div>
 
     <script src="audio.js"></script>
-    <script src="piece-designs.js"></script>
     <script src="game.js"></script>
     <script src="help.js"></script>
     <script src="online.js"></script>
