@@ -132,27 +132,17 @@ function handleLeave(ws) {
 function handleSetupComplete(ws, setup) {
   const player = `player${ws.playerNum}`;
   
-  console.log(`[SETUP] Player ${ws.playerNum} sent setup complete`);
-  console.log(`[SETUP] Setup pieces:`, setup);
-  
   // セットアップ情報を検証
   if (validateSetup(setup)) {
     gameState.setupReady[player] = true;
     gameState[`${player}Setup`] = setup;
     
-    console.log(`[SETUP] Player ${ws.playerNum} setup validated and saved`);
-    console.log(`[SETUP] setupReady state:`, gameState.setupReady);
-    
     // 両プレイヤーがReadyならゲーム開始
     if (gameState.setupReady.player1 && gameState.setupReady.player2) {
-      console.log('[SETUP] Both players ready! Starting game...');
       startGame();
     } else {
-      console.log('[SETUP] Waiting for other player...');
       broadcast({ type: 'playerReady', player: ws.playerNum });
     }
-  } else {
-    console.log(`[SETUP] Player ${ws.playerNum} setup validation FAILED`);
   }
 }
 
@@ -214,16 +204,10 @@ function getPieceCost(type) {
 }
 
 function startGame() {
-  console.log('[GAME] Starting game!');
-  console.log('[GAME] Player1 setup:', gameState.player1Setup);
-  console.log('[GAME] Player2 setup:', gameState.player2Setup);
-  
   gameState.phase = 'playing';
   
   // 先手後手をランダムに決定
   gameState.currentTurn = Math.random() < 0.5 ? 1 : 2;
-  
-  console.log(`[GAME] First player: ${gameState.currentTurn}`);
   
   // 盤面を初期化
   initializeBoard();
@@ -233,8 +217,6 @@ function startGame() {
     firstPlayer: gameState.currentTurn,
     board: gameState.board
   });
-  
-  console.log('[GAME] Game started successfully!');
 }
 
 function initializeBoard() {
@@ -278,25 +260,41 @@ function handleMove(ws, data) {
     return;
   }
   
-  // 移動先に駒がある場合は取る
+  // 移動先の駒を取得（取る場合）
   const capturedPiece = gameState.board[toRow][toCol];
-  if (capturedPiece) {
-    capturePiece(capturedPiece, ws.playerNum);
-  }
   
   // 駒を移動
   gameState.board[toRow][toCol] = piece;
   gameState.board[fromRow][fromCol] = null;
   
-  // Soldierの進化チェック
+  // Soldierのレベルアップ処理
   if (piece.type === 'soldier' && capturedPiece) {
-    piece.level = Math.min((piece.level || 0) + 1, 2);
+    if (!piece.level) piece.level = 0;
+    if (piece.level < 2) {
+      piece.level++;
+    }
   }
   
-  // 王を取ったら勝利
-  if (capturedPiece && capturedPiece.type === 'king') {
-    endGame(ws.playerNum);
-    return;
+  // 駒を取った場合、持ち駒に追加
+  if (capturedPiece) {
+    const capturer = `player${ws.playerNum}`;
+    if (!gameState.capturedPieces[capturer]) {
+      gameState.capturedPieces[capturer] = [];
+    }
+    
+    // 取った駒をリセット（レベルなど）
+    const resetPiece = {
+      type: capturedPiece.type,
+      owner: ws.playerNum
+    };
+    
+    gameState.capturedPieces[capturer].push(resetPiece);
+    
+    // 王を取ったらゲーム終了
+    if (capturedPiece.type === 'king') {
+      endGame(ws.playerNum);
+      return;
+    }
   }
   
   // ターン交代
@@ -304,110 +302,11 @@ function handleMove(ws, data) {
   
   broadcast({
     type: 'moved',
-    fromRow,
-    fromCol,
-    toRow,
-    toCol,
-    capturedPiece,
-    evolvedPiece: piece.type === 'soldier' ? piece : null,
-    nextTurn: gameState.currentTurn
-  });
-}
-
-function isValidMove(piece, fromRow, fromCol, toRow, toCol) {
-  // 基本的な範囲チェック
-  if (toRow < 0 || toRow >= 10 || toCol < 0 || toCol >= 10) {
-    return false;
-  }
-  
-  // 自分の駒がある場所には移動できない
-  const targetPiece = gameState.board[toRow][toCol];
-  if (targetPiece && targetPiece.owner === piece.owner) {
-    return false;
-  }
-  
-  // 駒の種類に応じた移動ルールをチェック
-  return checkPieceMovement(piece, fromRow, fromCol, toRow, toCol);
-}
-
-function checkPieceMovement(piece, fromRow, fromCol, toRow, toCol) {
-  const dr = toRow - fromRow;
-  const dc = toCol - fromCol;
-  const direction = piece.owner === 1 ? -1 : 1; // プレイヤー1は上向き、2は下向き
-  
-  switch (piece.type) {
-    case 'king':
-      return Math.abs(dr) <= 1 && Math.abs(dc) <= 1;
-    
-    case 'soldier':
-      const level = piece.level || 0;
-      if (level === 0) {
-        // Lv0: 前のみ
-        return dr === direction && dc === 0;
-      } else if (level === 1) {
-        // Lv1: 前 + 左右
-        return (dr === direction && dc === 0) || (dr === 0 && Math.abs(dc) === 1);
-      } else {
-        // Lv2: 十字（前後左右）
-        return (Math.abs(dr) === 1 && dc === 0) || (dr === 0 && Math.abs(dc) === 1);
-      }
-    
-    case 'gold':
-      if (piece.owner === 1) {
-        return (dr === -1 && Math.abs(dc) <= 1) || (dr === 0 && Math.abs(dc) === 1) || (dr === 1 && dc === 0);
-      } else {
-        return (dr === 1 && Math.abs(dc) <= 1) || (dr === 0 && Math.abs(dc) === 1) || (dr === -1 && dc === 0);
-      }
-    
-    case 'rook':
-      return (dr === 0 || dc === 0) && isPathClear(fromRow, fromCol, toRow, toCol);
-    
-    case 'bishop':
-      return Math.abs(dr) === Math.abs(dc) && isPathClear(fromRow, fromCol, toRow, toCol);
-    
-    case 'lance':
-      // 前後方向に無限移動可能
-      return dc === 0 && dr !== 0 && isPathClear(fromRow, fromCol, toRow, toCol);
-    
-    case 'sideLance':
-      return dr === 0 && dc !== 0 && isPathClear(fromRow, fromCol, toRow, toCol);
-    
-    case 'vKnight':
-      return (Math.abs(dr) === 2 && Math.abs(dc) === 1);
-    
-    case 'hKnight':
-      return (Math.abs(dr) === 1 && Math.abs(dc) === 2);
-    
-    case 'jump2':
-      return (dr === 2 * direction && dc === 0) || (dr === -2 * direction && dc === 0);
-    
-    default:
-      return false;
-  }
-}
-
-function isPathClear(fromRow, fromCol, toRow, toCol) {
-  const dr = Math.sign(toRow - fromRow);
-  const dc = Math.sign(toCol - fromCol);
-  let r = fromRow + dr;
-  let c = fromCol + dc;
-  
-  while (r !== toRow || c !== toCol) {
-    if (gameState.board[r][c] !== null) {
-      return false;
-    }
-    r += dr;
-    c += dc;
-  }
-  
-  return true;
-}
-
-function capturePiece(piece, captorPlayer) {
-  const player = `player${captorPlayer}`;
-  gameState.capturedPieces[player].push({
-    type: piece.type,
-    level: piece.level || 0
+    from: { row: fromRow, col: fromCol },
+    to: { row: toRow, col: toCol },
+    board: gameState.board,
+    currentTurn: gameState.currentTurn,
+    capturedPieces: gameState.capturedPieces
   });
 }
 
@@ -419,17 +318,21 @@ function handlePlaceFromHand(ws, data) {
   
   const { pieceIndex, row, col } = data;
   const player = `player${ws.playerNum}`;
-  const piece = gameState.capturedPieces[player][pieceIndex];
   
-  // 配置の妥当性をチェック
-  if (!isValidPlacement(row, col, ws.playerNum)) {
-    return;
-  }
+  // 持ち駒から取得
+  const piece = gameState.capturedPieces[player][pieceIndex];
+  if (!piece) return;
+  
+  // 配置先が空かチェック
+  if (gameState.board[row][col] !== null) return;
+  
+  // 敵陣3行には配置できない
+  const enemyRows = ws.playerNum === 1 ? [0, 1, 2] : [7, 8, 9];
+  if (enemyRows.includes(row)) return;
   
   // 駒を配置
   gameState.board[row][col] = {
     type: piece.type,
-    level: piece.level,
     owner: ws.playerNum
   };
   
@@ -443,43 +346,138 @@ function handlePlaceFromHand(ws, data) {
     type: 'placedFromHand',
     row,
     col,
-    piece: gameState.board[row][col],
-    nextTurn: gameState.currentTurn
+    board: gameState.board,
+    currentTurn: gameState.currentTurn,
+    capturedPieces: gameState.capturedPieces
   });
 }
 
-function isValidPlacement(row, col, playerNum) {
-  // マスが空いているか
-  if (gameState.board[row][col] !== null) {
-    return false;
-  }
+function isValidMove(piece, fromRow, fromCol, toRow, toCol) {
+  if (!piece) return false;
   
-  // 敵陣（相手側の3行）には配置できない
-  if (playerNum === 1 && row < 3) {
-    return false;
+  // 移動先が盤面外
+  if (toRow < 0 || toRow >= 10 || toCol < 0 || toCol >= 10) return false;
+  
+  // 移動先に自分の駒がある
+  const targetPiece = gameState.board[toRow][toCol];
+  if (targetPiece && targetPiece.owner === piece.owner) return false;
+  
+  const dr = toRow - fromRow;
+  const dc = toCol - fromCol;
+  
+  // Player1は上向き（direction=-1）、Player2は下向き（direction=1）
+  const direction = piece.owner === 1 ? -1 : 1;
+  
+  switch (piece.type) {
+    case 'king':
+      return Math.abs(dr) <= 1 && Math.abs(dc) <= 1 && (dr !== 0 || dc !== 0);
+      
+    case 'gold':
+      // 金将の動き
+      if (dr === direction && Math.abs(dc) <= 1) return true; // 前3方向
+      if (dr === 0 && Math.abs(dc) === 1) return true; // 左右
+      if (dr === -direction && dc === 0) return true; // 真後ろ
+      return false;
+      
+    case 'soldier':
+      const level = piece.level || 0;
+      if (level === 0) {
+        // Lv0: 前のみ
+        return dr === direction && dc === 0;
+      } else if (level === 1) {
+        // Lv1: 前 + 左右
+        return (dr === direction && dc === 0) || (dr === 0 && Math.abs(dc) === 1);
+      } else {
+        // Lv2: 十字（前後左右）
+        return (Math.abs(dr) === 1 && dc === 0) || (dr === 0 && Math.abs(dc) === 1);
+      }
+      
+    case 'rook':
+      if (dr === 0 || dc === 0) {
+        return isPathClear(fromRow, fromCol, toRow, toCol);
+      }
+      return false;
+      
+    case 'bishop':
+      if (Math.abs(dr) === Math.abs(dc)) {
+        return isPathClear(fromRow, fromCol, toRow, toCol);
+      }
+      return false;
+      
+    case 'lance':
+      // 前後無限（後方移動も可能）
+      if (dc === 0 && dr !== 0) {
+        return isPathClear(fromRow, fromCol, toRow, toCol);
+      }
+      return false;
+      
+    case 'sideLance':
+      if (dr === 0 && dc !== 0) {
+        return isPathClear(fromRow, fromCol, toRow, toCol);
+      }
+      return false;
+      
+    case 'vKnight':
+      // 上下方向ベースのL字
+      return (Math.abs(dr) === 2 && Math.abs(dc) === 1);
+      
+    case 'hKnight':
+      // 左右方向ベースのL字
+      return (Math.abs(dc) === 2 && Math.abs(dr) === 1);
+      
+    case 'jump2':
+      // 前後2マス先のみ
+      return Math.abs(dr) === 2 && dc === 0;
+      
+    default:
+      return false;
   }
-  if (playerNum === 2 && row > 6) {
-    return false;
+}
+
+function isPathClear(fromRow, fromCol, toRow, toCol) {
+  const dr = Math.sign(toRow - fromRow);
+  const dc = Math.sign(toCol - fromCol);
+  
+  let r = fromRow + dr;
+  let c = fromCol + dc;
+  
+  while (r !== toRow || c !== toCol) {
+    if (gameState.board[r][c] !== null) return false;
+    r += dr;
+    c += dc;
   }
   
   return true;
 }
 
 function handleSurrender(ws) {
-  const winner = ws.playerNum === 1 ? 2 : 1;
-  endGame(winner);
+  if (ws.playerNum === gameState.currentTurn) {
+    const winner = ws.playerNum === 1 ? 2 : 1;
+    endGame(winner);
+  }
 }
 
 function endGame(winner) {
   gameState.phase = 'finished';
+  
   broadcast({
     type: 'gameEnded',
-    winner
+    winner: winner
   });
+  
+  // 両プレイヤーを自動的に退席させる
+  setTimeout(() => {
+    if (gameState.players.player1) {
+      gameState.players.player1 = null;
+    }
+    if (gameState.players.player2) {
+      gameState.players.player2 = null;
+    }
+    resetGame();
+  }, 3000);
 }
 
 function resetGame() {
-  console.log('[RESET] Resetting game state');
   gameState.phase = 'waiting';
   gameState.board = null;
   gameState.currentTurn = null;
@@ -487,8 +485,6 @@ function resetGame() {
     player1: false,
     player2: false
   };
-  gameState.player1Setup = null;
-  gameState.player2Setup = null;
   broadcast({ type: 'gameReset' });
 }
 
@@ -502,16 +498,16 @@ function sendGameState(ws) {
     state: {
       phase: gameState.phase,
       costLimit: gameState.costLimit,
-      player1Seated: gameState.players.player1 !== null,
-      player2Seated: gameState.players.player2 !== null
+      players: {
+        player1: gameState.players.player1 !== null,
+        player2: gameState.players.player2 !== null
+      }
     }
   }));
 }
 
 function broadcast(data) {
-  // dataが文字列ならそのまま、オブジェクトならJSON化
-  const message = typeof data === 'string' ? data : JSON.stringify(data);
-  
+  const message = JSON.stringify(data);
   wss.clients.forEach((client) => {
     if (client.readyState === WebSocket.OPEN) {
       client.send(message);
@@ -519,7 +515,7 @@ function broadcast(data) {
   });
 }
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 10000;
 server.listen(PORT, () => {
-  console.log(`PIKUOサーバーがポート${PORT}で起動しました`);
+  console.log(`Server running on port ${PORT}`);
 });
