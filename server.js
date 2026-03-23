@@ -79,6 +79,9 @@ function handleMessage(ws, data) {
     case 'setupComplete':
       handleSetupComplete(ws, data.setup);
       break;
+    case 'cancelReady':
+      handleCancelReady(ws);
+      break;
     case 'getValidMoves':
       handleGetValidMoves(ws, data);
       break;
@@ -129,18 +132,35 @@ function handleLeave(ws) {
 function handleSetupComplete(ws, setup) {
   const player = `player${ws.playerNum}`;
   
+  console.log(`[SETUP] Player ${ws.playerNum} sent setup complete`);
+  console.log(`[SETUP] Setup pieces:`, setup);
+  
   // セットアップ情報を検証
   if (validateSetup(setup)) {
     gameState.setupReady[player] = true;
     gameState[`${player}Setup`] = setup;
     
+    console.log(`[SETUP] Player ${ws.playerNum} setup validated and saved`);
+    console.log(`[SETUP] setupReady state:`, gameState.setupReady);
+    
     // 両プレイヤーがReadyならゲーム開始
     if (gameState.setupReady.player1 && gameState.setupReady.player2) {
+      console.log('[SETUP] Both players ready! Starting game...');
       startGame();
     } else {
+      console.log('[SETUP] Waiting for other player...');
       broadcast({ type: 'playerReady', player: ws.playerNum });
     }
+  } else {
+    console.log(`[SETUP] Player ${ws.playerNum} setup validation FAILED`);
   }
+}
+
+function handleCancelReady(ws) {
+  const player = `player${ws.playerNum}`;
+  gameState.setupReady[player] = false;
+  
+  broadcast({ type: 'playerCancelReady', player: ws.playerNum });
 }
 
 function handleGetValidMoves(ws, data) {
@@ -194,10 +214,16 @@ function getPieceCost(type) {
 }
 
 function startGame() {
+  console.log('[GAME] Starting game!');
+  console.log('[GAME] Player1 setup:', gameState.player1Setup);
+  console.log('[GAME] Player2 setup:', gameState.player2Setup);
+  
   gameState.phase = 'playing';
   
   // 先手後手をランダムに決定
   gameState.currentTurn = Math.random() < 0.5 ? 1 : 2;
+  
+  console.log(`[GAME] First player: ${gameState.currentTurn}`);
   
   // 盤面を初期化
   initializeBoard();
@@ -207,6 +233,8 @@ function startGame() {
     firstPlayer: gameState.currentTurn,
     board: gameState.board
   });
+  
+  console.log('[GAME] Game started successfully!');
 }
 
 function initializeBoard() {
@@ -338,13 +366,8 @@ function checkPieceMovement(piece, fromRow, fromCol, toRow, toCol) {
       return Math.abs(dr) === Math.abs(dc) && isPathClear(fromRow, fromCol, toRow, toCol);
     
     case 'lance':
-      // Player1は上向き（row減少）、Player2は下向き（row増加）
-      if (dc !== 0) return false; // 横移動は不可
-      if (piece.owner === 1) {
-        return dr < 0 && isPathClear(fromRow, fromCol, toRow, toCol);
-      } else {
-        return dr > 0 && isPathClear(fromRow, fromCol, toRow, toCol);
-      }
+      // 前後方向に無限移動可能
+      return dc === 0 && dr !== 0 && isPathClear(fromRow, fromCol, toRow, toCol);
     
     case 'sideLance':
       return dr === 0 && dc !== 0 && isPathClear(fromRow, fromCol, toRow, toCol);
@@ -456,6 +479,7 @@ function endGame(winner) {
 }
 
 function resetGame() {
+  console.log('[RESET] Resetting game state');
   gameState.phase = 'waiting';
   gameState.board = null;
   gameState.currentTurn = null;
@@ -463,6 +487,8 @@ function resetGame() {
     player1: false,
     player2: false
   };
+  gameState.player1Setup = null;
+  gameState.player2Setup = null;
   broadcast({ type: 'gameReset' });
 }
 

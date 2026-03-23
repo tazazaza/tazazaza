@@ -242,9 +242,11 @@ class HelpSystem {
                 break;
                 
             case 'lance':
-                // 前方向のみ
-                for (let i = 0; i < centerRow; i++) {
-                    ctx.fillRect(startX + centerCol * cellSize, startY + i * cellSize, cellSize, cellSize);
+                // 前後方向のみ
+                for (let i = 0; i < 5; i++) {
+                    if (i !== centerRow) {
+                        ctx.fillRect(startX + centerCol * cellSize, startY + i * cellSize, cellSize, cellSize);
+                    }
                 }
                 break;
                 

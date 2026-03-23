@@ -24,6 +24,8 @@ class OnlineGame {
         this.setupHistory = [];
         this.setupHistoryIndex = -1;
         this.lastMove = null; // 最後の手を記録
+        this.isReady = false; // 自分のREADY状態
+        this.opponentReady = false; // 相手のREADY状態
     }
 
     init() {
@@ -124,7 +126,10 @@ class OnlineGame {
                 }
                 break;
             case 'playerReady':
-                // 相手がReady
+                this.handlePlayerReady(data.player);
+                break;
+            case 'playerCancelReady':
+                this.handlePlayerCancelReady(data.player);
                 break;
             case 'gameStarted':
                 this.startGame(data);
@@ -183,6 +188,28 @@ class OnlineGame {
         this.gameState = { ...this.gameState, ...state };
     }
 
+    handlePlayerReady(playerNum) {
+        if (playerNum !== this.myPlayerNum) {
+            this.opponentReady = true;
+            const oppReadyState = document.querySelector('#oppReadyStatus .ready-state');
+            if (oppReadyState) {
+                oppReadyState.textContent = 'READY';
+                oppReadyState.className = 'ready-state ready';
+            }
+        }
+    }
+
+    handlePlayerCancelReady(playerNum) {
+        if (playerNum !== this.myPlayerNum) {
+            this.opponentReady = false;
+            const oppReadyState = document.querySelector('#oppReadyStatus .ready-state');
+            if (oppReadyState) {
+                oppReadyState.textContent = 'NOT READY';
+                oppReadyState.className = 'ready-state not-ready';
+            }
+        }
+    }
+
     startSetup() {
         showScreen('setupScreen');
         
@@ -190,7 +217,17 @@ class OnlineGame {
         this.setupPieces = [];
         this.setupHistory = [];
         this.setupHistoryIndex = -1;
+        this.isReady = false;
+        this.opponentReady = false;
         document.getElementById('remainingCost').textContent = this.remainingCost;
+        
+        // READY表示をリセット
+        this.updateReadyDisplay();
+        const oppReadyState = document.querySelector('#oppReadyStatus .ready-state');
+        if (oppReadyState) {
+            oppReadyState.textContent = 'NOT READY';
+            oppReadyState.className = 'ready-state not-ready';
+        }
         
         // キャンバスの設定（playerNumを渡す）
         const canvas = document.getElementById('setupCanvas');
@@ -433,10 +470,39 @@ class OnlineGame {
             return;
         }
         
-        this.send({
-            type: 'setupComplete',
-            setup: this.setupPieces
-        });
+        // READY状態をトグル
+        this.isReady = !this.isReady;
+        this.updateReadyDisplay();
+        
+        if (this.isReady) {
+            // READYを送信
+            this.send({
+                type: 'setupComplete',
+                setup: this.setupPieces
+            });
+        } else {
+            // READY解除を送信
+            this.send({
+                type: 'cancelReady'
+            });
+        }
+    }
+    
+    updateReadyDisplay() {
+        const readyBtn = document.getElementById('readyBtn');
+        const myReadyState = document.querySelector('#myReadyStatus .ready-state');
+        
+        if (this.isReady) {
+            readyBtn.textContent = 'CANCEL READY';
+            readyBtn.style.background = 'rgba(255, 100, 100, 0.2)';
+            myReadyState.textContent = 'READY';
+            myReadyState.className = 'ready-state ready';
+        } else {
+            readyBtn.textContent = 'READY';
+            readyBtn.style.background = '';
+            myReadyState.textContent = 'NOT READY';
+            myReadyState.className = 'ready-state not-ready';
+        }
     }
 
     startGame(data) {
@@ -646,7 +712,17 @@ class OnlineGame {
     updateTurnDisplay() {
         this.isMyTurn = this.gameState.currentTurn === this.myPlayerNum;
         const turnText = this.isMyTurn ? 'YOUR TURN' : "OPPONENT'S TURN";
-        document.getElementById('currentPlayer').textContent = turnText;
+        const turnIndicator = document.querySelector('.turn-indicator');
+        const currentPlayerSpan = document.getElementById('currentPlayer');
+        
+        currentPlayerSpan.textContent = turnText;
+        
+        // ターンインジケーターにクラスを追加/削除
+        if (this.isMyTurn) {
+            turnIndicator.classList.add('my-turn');
+        } else {
+            turnIndicator.classList.remove('my-turn');
+        }
         
         // 盤面の縁を光らせる
         const boardContainer = document.querySelector('.board-container');

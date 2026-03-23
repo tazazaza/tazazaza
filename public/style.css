@@ -271,6 +271,51 @@ body::before {
     flex: 1;
 }
 
+.ready-status {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+    margin: 15px 0;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 5px;
+}
+
+.ready-indicator {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.ready-label {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    color: var(--text-secondary);
+}
+
+.ready-state {
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    padding: 5px 15px;
+    border-radius: 3px;
+    transition: all 0.3s ease;
+}
+
+.ready-state.not-ready {
+    color: var(--text-secondary);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.ready-state.ready {
+    color: var(--accent-gold);
+    background: rgba(212, 175, 55, 0.2);
+    box-shadow: 0 0 10px var(--glow-gold);
+}
+
 .mode-buttons {
     display: flex;
     gap: 40px;
@@ -544,9 +589,32 @@ canvas {
 }
 
 .turn-indicator {
-    font-size: 18px;
-    font-weight: 600;
-    letter-spacing: 2px;
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    padding: 15px 30px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.turn-indicator.my-turn {
+    background: rgba(212, 175, 55, 0.2);
+    border-color: var(--accent-gold);
+    box-shadow: 0 0 30px var(--glow-gold);
+    animation: turnPulse 2s ease-in-out infinite;
+}
+
+@keyframes turnPulse {
+    0%, 100% { 
+        transform: scale(1);
+        box-shadow: 0 0 30px var(--glow-gold);
+    }
+    50% { 
+        transform: scale(1.05);
+        box-shadow: 0 0 50px var(--glow-gold);
+    }
 }
 
 #currentPlayer {
