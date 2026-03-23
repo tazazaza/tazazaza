@@ -496,6 +496,35 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
     
+    // 音量コントロールのホバー表示
+    const volumeControls = document.querySelectorAll('.volume-control');
+    const helpBtns = document.querySelectorAll('.help-btn');
+    
+    // ヘルプボタンにホバーで音量コントロールを表示
+    helpBtns.forEach((btn, index) => {
+        const control = volumeControls[index];
+        if (!control) return;
+        
+        btn.addEventListener('mouseenter', () => {
+            control.classList.add('active');
+        });
+        
+        btn.addEventListener('mouseleave', () => {
+            setTimeout(() => {
+                if (!control.matches(':hover')) {
+                    control.classList.remove('active');
+                }
+            }, 100);
+        });
+    });
+    
+    // 音量コントロール自体のホバー
+    volumeControls.forEach(control => {
+        control.addEventListener('mouseleave', () => {
+            control.classList.remove('active');
+        });
+    });
+    
     // 音量スライダーの設定
     const volumeSliders = document.querySelectorAll('.volume-slider');
     volumeSliders.forEach(slider => {
@@ -507,10 +536,10 @@ document.addEventListener('DOMContentLoaded', () => {
             volumeSliders.forEach(s => s.value = e.target.value);
             
             // アイコンを更新
-            const icon = slider.parentElement.querySelector('.volume-icon');
-            if (icon) {
+            const icons = document.querySelectorAll('.volume-icon');
+            icons.forEach(icon => {
                 icon.textContent = volume === 0 ? '🔇' : volume < 0.5 ? '🔉' : '🔊';
-            }
+            });
         });
     });
 });

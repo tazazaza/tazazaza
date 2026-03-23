@@ -26,9 +26,6 @@ body {
     color: var(--text-primary);
     overflow-x: hidden;
     min-height: 100vh;
-    zoom: 0.75;
-    -moz-transform: scale(0.75);
-    -moz-transform-origin: 0 0;
 }
 
 /* 幾何学的背景パターン */
@@ -108,9 +105,16 @@ body::before {
     border-radius: 20px;
     z-index: 100;
     transition: all 0.3s ease;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(-10px);
 }
 
-.volume-control:hover {
+.volume-control:hover,
+.volume-control.active {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(0);
     background: rgba(255, 255, 255, 0.08);
     box-shadow: 0 0 15px var(--glow-gold);
 }
@@ -118,6 +122,7 @@ body::before {
 .volume-icon {
     font-size: 18px;
     user-select: none;
+    cursor: pointer;
 }
 
 .volume-slider {

@@ -231,7 +231,7 @@ class OnlineGame {
         
         // キャンバスの設定（playerNumを渡す）
         const canvas = document.getElementById('setupCanvas');
-        this.boardRenderer = new BoardRenderer(canvas, 80, this.myPlayerNum);
+        this.boardRenderer = new BoardRenderer(canvas, 64, this.myPlayerNum);
         this.setupCanvasForPlacement(canvas);
         
         // 空の盤面を描画
@@ -513,7 +513,7 @@ class OnlineGame {
         this.updateTurnDisplay();
         
         const canvas = document.getElementById('gameCanvas');
-        this.boardRenderer = new BoardRenderer(canvas, 80, this.myPlayerNum);
+        this.boardRenderer = new BoardRenderer(canvas, 64, this.myPlayerNum);
         this.setupGameCanvas(canvas);
         this.boardRenderer.drawBoard(this.gameState.board);
     }
